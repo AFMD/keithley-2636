@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 #coding:utf-8
+
 """
   Author:  Ross
   Purpose: 'Simple' driver for Keithley 2636
@@ -8,7 +9,6 @@
 
 import visa
 import sys
-
 
 ########################################################################
 class K2636():
@@ -23,13 +23,13 @@ class K2636():
 	def make_connection (self, rm, address, read_term, baudrate):
 		"""Make initial connection to instrument"""
 		
-		if 'ttyS' in str(address) :
+		if 'ttyS' or 'ttyUSB' in str(address) :
 			# Connection via SERIAL
 			print ('Connecting to Keithley via %s' %address)
 			self.inst = rm.open_resource(address)
 			self.inst.read_termination = str(read_term)
 			self.inst.baud_rate = baudrate
-			print (self.inst.query('*IDN?'))
+			#print (self.inst.query('*IDN?')) # Doesnt work for 2636
 			
 		if 'GPIB' in str(address):
 			# Connection via GPIB
@@ -59,16 +59,17 @@ class K2636():
 		self.write('script.anonymous.run()')
 		
 ########################################################################
-def test():
-	'''For testing only'''
+def uploadTSP():
+	'''Connects to keithley, uploads TSP instructions and tells keithley to execute'''
 	print ('BEGIN')
 	#------------------------------------------------------------
 	
 	rm = visa.ResourceManager('@py') #use py-visa backend
-	keithley = K2636(rm, address='ASRL/dev/ttyS0', read_term='\r', baudrate=57600)
+	keithley = K2636(rm, address='ASRL/dev/ttyUSB0', read_term='\r', baudrate=57600)
 	keithley.write('*RST')
 	
-	keithley.loadTSP('IV-Sweep.tsp')
+	print ('Uploading TSP script: ', sys.argv[1])
+	keithley.loadTSP(sys.argv[1])
 	keithley.runTSP()
 	
 	rm.close()
@@ -77,5 +78,5 @@ def test():
 	print ('END')
 
 if __name__ == '__main__':
-	test()
+	uploadTSP()
 	
