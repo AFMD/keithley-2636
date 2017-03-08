@@ -1,12 +1,15 @@
-# transistor_tools_K2636
+# Transistor-tools-K2636
 For the electrical characterisation of OFETS using a keithley 2636.
-The K2636.py script in this folder loads a set of .tsp instructions into the memory of the Keithley. It then tells the keithley to execute the script before closing connection with the instrument. Run as follows:
+The K2636.py script in this folder loads a set of .tsp instructions into the memory of the Keithley. It then tells the keithley to execute the script before closing the connection with the instrument. Run as follows:
 
->>python3 K2636.py example.tsp
+> python3 K2636.py example.tsp
 
 # requires:
 - PyVisa
 - PyVisa-py
+
+# How to hook up the keithley:
+[[https://github.com/AFMD/transistor-tools-K2636/blob/master/K2636_connections.png|alt=octocat]]
 
 # Things to note
 - The Keithley 2636 uses 'TSP' rather than the much-loved 'SCPI' which the Keithley 2400 understood.
