@@ -43,20 +43,33 @@ class K2636():
 		self.inst.write(m)
 		
 	#----------------------------------------------------------------------		
+	def query(self, m):
+		'''Wrapper for the PyVisa query function'''
+		assert type(m) == str
+		self.inst.query(m)	
+		
+	#----------------------------------------------------------------------		
 	def loadTSP(self, tsp):
 		'''Load an anonymous TSP script into the K2636 nonvolatile memory'''
 		self.write('loadscript')
 		print ('\n---------LOADING TSP-----------')
 		for line in open(tsp, mode='r'):
 			self.write(line)
-			print('%s' %line)
-		print ('----------SENT TO K2636-----------\n')
+			#print('%s' %line)
 		self.write('endscript')
+		print ('----------SENT TO K2636-----------\n')
 				
 	#----------------------------------------------------------------------		
 	def runTSP(self):
 		'''Run the anonymous TSP script currently loaded in the K2636 memory'''	
 		self.write('script.anonymous.run()')
+		print('Script is running remotely...')
+		
+	#----------------------------------------------------------------------		
+	def readBuffer(self):
+		'''Read specified buffer in keithley memory'''	
+		print(self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)'))
+		print(self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)'))
 		
 ########################################################################
 def uploadTSP():
@@ -71,7 +84,8 @@ def uploadTSP():
 	print ('Uploading TSP script: ', sys.argv[1])
 	keithley.loadTSP(sys.argv[1])
 	keithley.runTSP()
-	
+	keithley.readBuffer()
+		
 	rm.close()
 	
 	#------------------------------------------------------------
