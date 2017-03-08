@@ -9,7 +9,7 @@ The K2636.py script in this folder loads a set of .tsp instructions into the mem
 - PyVisa-py
 
 # How to hook up the keithley:
-[[https://github.com/AFMD/transistor-tools-K2636/blob/master/K2636_connections.png|alt=octocat]]
+![Alt text](K2636_connections.png?raw=true "Setup")
 
 # Things to note
 - The Keithley 2636 uses 'TSP' rather than the much-loved 'SCPI' which the Keithley 2400 understood.
