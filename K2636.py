@@ -33,7 +33,7 @@ class K2636():
 			
 		if 'GPIB' in str(address):
 			# Connection via GPIB
-			print ('This is too hard in linux...')
+			print ('Please use serial.')
 			sys.exit()
 			
 	#----------------------------------------------------------------------		
@@ -43,19 +43,21 @@ class K2636():
 		self.inst.write(m)
 		
 	#----------------------------------------------------------------------		
-	def query(self, m):
-		'''Wrapper for the PyVisa query function'''
-		assert type(m) == str
-		self.inst.query(m)	
+	def read(self):
+		'''Wrapper for the PyVisa read function'''
+		r = self.inst.read()
+		return r
 		
 	#----------------------------------------------------------------------		
 	def loadTSP(self, tsp):
 		'''Load an anonymous TSP script into the K2636 nonvolatile memory'''
 		self.write('loadscript')
 		print ('\n---------LOADING TSP-----------')
+		line_count = 1
 		for line in open(tsp, mode='r'):
 			self.write(line)
-			#print('%s' %line)
+			print('[%s]\t-->' %line_count, line, end='')
+			line_count += 1
 		self.write('endscript')
 		print ('----------SENT TO K2636-----------\n')
 				
@@ -63,13 +65,13 @@ class K2636():
 	def runTSP(self):
 		'''Run the anonymous TSP script currently loaded in the K2636 memory'''	
 		self.write('script.anonymous.run()')
-		print('Script is running remotely...')
+		print('Script has been told to run.')
 		
 	#----------------------------------------------------------------------		
 	def readBuffer(self):
 		'''Read specified buffer in keithley memory'''	
-		print(self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)'))
-		print(self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)'))
+		print(self.read('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)'))
+		print(self.read('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)'))
 		
 ########################################################################
 def uploadTSP():
@@ -79,7 +81,6 @@ def uploadTSP():
 	
 	rm = visa.ResourceManager('@py') #use py-visa backend
 	keithley = K2636(rm, address='ASRL/dev/ttyUSB0', read_term='\r', baudrate=57600)
-	keithley.write('*RST')
 	
 	print ('Uploading TSP script: ', sys.argv[1])
 	keithley.loadTSP(sys.argv[1])

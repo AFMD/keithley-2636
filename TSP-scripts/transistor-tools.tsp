@@ -1,8 +1,9 @@
 reset()
 display.clear()
+display.menu("Welcome to Transistor-tools", "BEGIN")
 
 -- Beep in excitement, but only once
-beeper.beep(2, 2400)
+beeper.beep(0.5, 2636)
 	
 -- TRANSFER CHARACTERISTICS
 -- Clear buffers and make sure the right thing is recorded
@@ -37,7 +38,8 @@ smub.source.output = smub.OUTPUT_ON
 
 for V = 1, 100 do
 	smub.source.levelv = V * 0.01
-	smua.measure.i(smua.nvbuffer1)	
+	delay(0.5)
+	smua.measure.i(smua.nvbuffer1)
 end
 
 smua.source.output = smua.OUTPUT_OFF
