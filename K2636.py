@@ -9,6 +9,7 @@
 
 import visa
 import sys
+import pandas as pd
 
 ########################################################################
 class K2636():
@@ -29,7 +30,7 @@ class K2636():
 			self.inst = rm.open_resource(address)
 			self.inst.read_termination = str(read_term)
 			self.inst.baud_rate = baudrate
-			#print (self.inst.query('*IDN?')) # Doesnt work for 2636
+			print (self.inst.query('*IDN?'))
 			
 		if 'GPIB' in str(address):
 			# Connection via GPIB
@@ -48,6 +49,12 @@ class K2636():
 		r = self.inst.read()
 		return r
 		
+	#----------------------------------------------------------------------		
+	def query(self, s):
+		'''Wrapper for the PyVisa query function'''
+		r = self.inst.query(s)
+		return r
+	
 	#----------------------------------------------------------------------		
 	def loadTSP(self, tsp):
 		'''Load an anonymous TSP script into the K2636 nonvolatile memory'''
@@ -69,9 +76,15 @@ class K2636():
 		
 	#----------------------------------------------------------------------		
 	def readBuffer(self):
-		'''Read specified buffer in keithley memory'''	
-		print(self.read('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)'))
-		print(self.read('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)'))
+		'''Read specified buffer in keithley memory and return a pandas array'''
+		vg = [float(x) for x in self.query('printbuffer(1, smub.nvbuffer1.n, smub.nvbuffer1.sourcevalues)').split(',')]
+		vd = [float(x) for x in self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)').split(',')]
+		c = [float(x) for x in self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
+		
+		data = {'Gate Voltage [V]': [vg[:]], 'Channel Voltage [V]' : [vd[:]], 'Channel Current [A]': [c[:]]} 
+		df = pd.DataFrame(data, columns=['Gate Voltage [V]', 'Channel Voltage [V]', 'Channel Current [A]'])
+		return df
+		
 		
 ########################################################################
 def uploadTSP():
@@ -80,12 +93,13 @@ def uploadTSP():
 	#------------------------------------------------------------
 	
 	rm = visa.ResourceManager('@py') #use py-visa backend
-	keithley = K2636(rm, address='ASRL/dev/ttyUSB0', read_term='\r', baudrate=57600)
+	keithley = K2636(rm, address='ASRL/dev/ttyUSB0', read_term='\n', baudrate=57600)
 	
 	print ('Uploading TSP script: ', sys.argv[1])
 	keithley.loadTSP(sys.argv[1])
 	keithley.runTSP()
-	keithley.readBuffer()
+	df = keithley.readBuffer()
+	df.to_excel('test.xls')
 		
 	rm.close()
 	
