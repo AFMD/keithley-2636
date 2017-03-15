@@ -76,13 +76,11 @@ class K2636():
 		
 	#----------------------------------------------------------------------		
 	def readBuffer(self):
-		'''Read specified buffer in keithley memory and return a pandas array'''
-		vg = [float(x) for x in self.query('printbuffer(1, smub.nvbuffer1.n, smub.nvbuffer1.sourcevalues)').split(',')]
-		vd = [float(x) for x in self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)').split(',')]
-		c = [float(x) for x in self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
-		
-		data = {'Gate Voltage [V]': [vg[:]], 'Channel Voltage [V]' : [vd[:]], 'Channel Current [A]': [c[:]]} 
-		df = pd.DataFrame(data, columns=['Gate Voltage [V]', 'Channel Voltage [V]', 'Channel Current [A]'])
+		'''Read specified buffer in keithley memory and return a pandas dataframe'''
+		df = pd.DataFrame()
+		df['Gate Voltage [V]'] = [float(x) for x in self.query('printbuffer(1, smub.nvbuffer1.n, smub.nvbuffer1.sourcevalues)').split(',')]
+		df['Channel Voltage [V]'] = [float(x) for x in self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)').split(',')]
+		df['Channel Current [A]'] = [float(x) for x in self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
 		return df
 		
 		
@@ -99,8 +97,7 @@ def uploadTSP():
 	keithley.loadTSP(sys.argv[1])
 	keithley.runTSP()
 	df = keithley.readBuffer()
-	df.to_excel('test.xls')
-		
+	df.to_csv('first_run.csv')	
 	rm.close()
 	
 	#------------------------------------------------------------
