@@ -97,7 +97,7 @@ def uploadTSP():
 	keithley.loadTSP(sys.argv[1])
 	keithley.runTSP()
 	df = keithley.readBuffer()
-	df.to_csv('second-try3.csv')	
+	df.to_csv('no-gate-voltage.csv')	
 	rm.close()
 	
 	#------------------------------------------------------------

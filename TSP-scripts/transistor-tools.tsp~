@@ -26,7 +26,7 @@ smua.source.limiti = 1e-5
 smua.measure.rangei = 1e-5
 smua.measure.nplc = 10.00
 -- Set Vd
-smua.source.levelv = 10
+smua.source.levelv = 5
 --Channel 2 (sweep Vg)
 smub.source.func = smub.OUTPUT_DCVOLTS
 smub.source.levelv = 0.0
@@ -38,7 +38,7 @@ smua.source.output = smua.OUTPUT_ON
 smub.source.output = smub.OUTPUT_ON
 
 for V = 1, 100 do
-	smub.source.levelv = (V * 0.4) - 20
+	smub.source.levelv = (V * 0)
 	delay(0.2)
 	smua.measure.i(smua.nvbuffer1)
 	smub.measure.v(smub.nvbuffer1)
