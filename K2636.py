@@ -76,11 +76,12 @@ class K2636():
 		
 	#----------------------------------------------------------------------		
 	def readBuffer(self):
-		'''Read specified buffer in keithley memory and return a pandas dataframe'''
-		df = pd.DataFrame()
-		df['Gate Voltage [V]'] = [float(x) for x in self.query('printbuffer(1, smub.nvbuffer1.n, smub.nvbuffer1.sourcevalues)').split(',')]
-		df['Channel Voltage [V]'] = [float(x) for x in self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)').split(',')]
-		df['Channel Current [A]'] = [float(x) for x in self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
+		'''Read specified buffer in keithley memory and return a pandas array'''
+		vg = [float(x) for x in self.query('printbuffer(1, smub.nvbuffer1.n, smub.nvbuffer1.sourcevalues)').split(',')]
+		vd = [float(x) for x in self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)').split(',')]
+		c = [float(x) for x in self.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
+		
+		df = pd.DataFrame({'Gate Voltage [V]': vg, 'Channel Voltage [V]' : vd, 'Channel Current [A]': c})
 		return df
 		
 		
@@ -92,12 +93,12 @@ def uploadTSP():
 	
 	rm = visa.ResourceManager('@py') #use py-visa backend
 	keithley = K2636(rm, address='ASRL/dev/ttyUSB0', read_term='\n', baudrate=57600)
-	
-	print ('Uploading TSP script: ', sys.argv[1])
-	keithley.loadTSP(sys.argv[1])
+	print ('Uploading TSP script: ')
+	keithley.loadTSP('TSP-scripts/transistor-tools2.tsp')
 	keithley.runTSP()
 	df = keithley.readBuffer()
-	df.to_csv('second-try3.csv')	
+	output_name = 'alba-doped-20um-10.csv'
+	df.to_csv(output_name, sep='\t', index=False)	
 	rm.close()
 	
 	#------------------------------------------------------------
