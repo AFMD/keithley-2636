@@ -97,7 +97,7 @@ def uploadTSP():
 	keithley.loadTSP('TSP-scripts/transistor-tools2.tsp')
 	keithley.runTSP()
 	df = keithley.readBuffer()
-	output_name = 'alba-doped-20um-10.csv'
+	output_name = 'znpc-reusedsub-20um-2.csv'
 	df.to_csv(output_name, sep='\t', index=False)	
 	rm.close()
 	
