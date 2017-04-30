@@ -55,11 +55,11 @@ smub.source.output = smua.OUTPUT_ON
 smua.source.output = smub.OUTPUT_ON
 
 
-for Vg = 0, 10 do
-    smub.source.levelv = Vg * (-5)
+for Vg = -10, 10 do
+    smub.source.levelv = Vg * (5)
     delay(0.1)
-    for Vd = 0, 50 do
-        smua.source.levelv = Vd * (-0.01)
+    for Vd = -25, 25 do
+        smua.source.levelv = Vd * 2
         smua.measure.i(smua.nvbuffer1)
         smub.measure.v(smub.nvbuffer1)
         delay(0.1)

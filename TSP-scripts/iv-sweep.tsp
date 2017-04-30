@@ -54,7 +54,7 @@ display.screen = display.SMUA
 smua.source.output = smub.OUTPUT_ON
 
 for Vd = -100, 100 do
-        smua.source.levelv = Vd * (0.01)
+        smua.source.levelv = Vd * (0.5)
         smua.measure.i(smua.nvbuffer1)
         smub.measure.v(smub.nvbuffer1)
         delay(0.1)

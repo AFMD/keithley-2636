@@ -98,7 +98,8 @@ def uploadTSP():
 	keithley = K2636(rm, address='ASRL/dev/ttyUSB0', read_term='\n', baudrate=57600)
 	
 	#-------------------------------------------------------------
-	sample = 'znpc-5wtpc-20um-3'
+	sample = 'znpc-undoped-2p5um-3-with-drain-notearth-and-gate-earth'
+	#sample = 'clean-substrate-floating'
 	
 	#-------------------------------------------------------------
 	#print ('Uploading TSP script: ')
@@ -135,9 +136,9 @@ def uploadTSP():
 	
 	#------------------------------------------------------------
 	
-	df1 = pd.read_csv(str(sample+'-iv-sweep.csv'),'\t')
-	plt.plot(df1['Channel Voltage [V]'], df1['Channel Current [A]'], '.')
-	plt.show()
+	#df1 = pd.read_csv(str(sample+'-iv-sweep.csv'),'\t')
+	#plt.plot(df1['Channel Voltage [V]'], df1['Channel Current [A]'], '.')
+	#plt.show()
 	df2 = pd.read_csv(str(sample+'-output.csv'),'\t')
 	plt.plot(df2['Channel Voltage [V]'], df2['Channel Current [A]'], '.')
 	plt.show()
