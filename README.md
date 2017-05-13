@@ -7,12 +7,19 @@ The K2636.py script in this folder loads a set of .tsp instructions into the mem
 # Example python script:
 
 >keithley = K2636(address='ASRL/dev/ttyUSB0', read_term='\n', baudrate=57600)	
+
 >sample = 'ofet1'
+
 >keithley.IVsweep(sample)
+
 >keithley.Output(sample)
+
 >keithley.Transfer(sample)
+
 >keithley.DisplayMeasurement(sample)
+
 >keithley.closeConnection()
+
 
 # requires:
 - PyVisa
