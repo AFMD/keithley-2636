@@ -199,5 +199,3 @@ if __name__ == '__main__':
 	keithley.Transfer(sample)
 	keithley.DisplayMeasurement(sample)
 	keithley.closeConnection()
-
-

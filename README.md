@@ -1,14 +1,28 @@
 # Transistor-tools-K2636
-For the electrical characterisation of OFETS using a keithley 2636.
+For controlling the keithley 2636.
 The K2636.py script in this folder loads a set of .tsp instructions into the memory of the Keithley. It then tells the keithley to execute the script before closing the connection with the instrument. Run as follows:
 
-> python3 K2636.py example.tsp
+> from K2636 import *
+
+# Example python script:
+
+>keithley = K2636(address='ASRL/dev/ttyUSB0', read_term='\n', baudrate=57600)	
+>sample = 'ofet1'
+>keithley.IVsweep(sample)
+>keithley.Output(sample)
+>keithley.Transfer(sample)
+>keithley.DisplayMeasurement(sample)
+>keithley.closeConnection()
 
 # requires:
 - PyVisa
 - PyVisa-py
+- numpy
+- pandas
+- python 3
+- matplotlib
 
-# How to hook up the keithley:
+# How to hook up the keithley 2636 for three terminal OFET measurements:
 ![Alt text](K2636_connections.png?raw=true "Setup")
 
 # Things to note
