@@ -11,6 +11,8 @@ import visa
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.style as style
+import time
 
 ########################################################################
 class K2636():
@@ -19,7 +21,8 @@ class K2636():
 	#----------------------------------------------------------------------
 	def __init__(self, rm, address, read_term, baudrate):
 		"""Constructor - makes connection to instrument on instance"""
-		self.make_connection(rm, address, read_term, baudrate)
+		#self.make_connection(rm, address, read_term, baudrate)
+		pass
 	
 	#----------------------------------------------------------------------
 	def make_connection (self, rm, address, read_term, baudrate):
@@ -59,21 +62,22 @@ class K2636():
 	#----------------------------------------------------------------------		
 	def loadTSP(self, tsp):
 		'''Load an anonymous TSP script into the K2636 nonvolatile memory'''
+		tsp_dir = 'TSP-scripts/' # Put all tsp scripts in this folder
+		
 		self.write('loadscript')
-		print ('\n---------LOADING TSP-----------')
 		line_count = 1
-		for line in open(tsp, mode='r'):
+		for line in open(str(tsp_dir + tsp), mode='r'):
 			self.write(line)
-			print('[%s]\t-->' %line_count, line, end='')
 			line_count += 1
 		self.write('endscript')
-		print ('\n----------SENT TO K2636-----------\n')
+		print('----------------------------------------')
+		print ('Uploaded TSP script: ', tsp)
 				
 	#----------------------------------------------------------------------		
 	def runTSP(self):
 		'''Run the anonymous TSP script currently loaded in the K2636 memory'''	
 		self.write('script.anonymous.run()')
-		print('Script has been told to run.')
+		print('Measurement in progress...')
 		
 	#----------------------------------------------------------------------		
 	def readBuffer(self):
@@ -85,70 +89,103 @@ class K2636():
 		
 		df = pd.DataFrame({'Gate Voltage [V]': vg, 'Channel Voltage [V]' : vd, 'Channel Current [A]': c, 'Gate Leakage [A]': ig})
 		return df
-
+	
+	#----------------------------------------------------------------------		
+	def displayMeasurements(sample):
+		'''Show graphs of measurements'''
+		style.use('ggplot')
+		fig, ([ax1, ax2], [ax3, ax4]) = plt.subplots(2, 2, figsize=(20, 10), dpi= 80, facecolor='w', edgecolor='k')
+		df1 = pd.read_csv(str(sample+'-iv-sweep.csv'),'\t')
+		ax1.plot(df1['Channel Voltage [V]'], df1['Channel Current [A]'], '.')
+		ax1.set_title('I-V sweep')
+		ax1.set_xlabel('Channel Voltage [V]')
+		ax1.set_ylabel('Channel Current [A]')
 		
+		df2 = pd.read_csv(str(sample+'-output.csv'),'\t')
+		ax2.plot(df2['Channel Voltage [V]'], df2['Channel Current [A]'], '.')
+		ax2.set_title('Output curves')
+		ax2.set_xlabel('Channel Voltage [V]')
+		ax2.set_ylabel('Channel Current [A]')	
+		
+		df3 = pd.read_csv(str(sample+'-transfer.csv'),'\t')
+		ax3.plot(df3['Gate Voltage [V]'], df3['Channel Current [A]'], '.')
+		ax3.set_title('Transfer Curves')
+		ax3.set_xlabel('Gate Voltage [V]')
+		ax3.set_ylabel('Channel Current [A]')	
+		
+		df4 = pd.read_csv(str(sample+'-transfer.csv'),'\t')
+		ax4.plot(df4['Gate Voltage [V]'], df4['Gate Leakage [A]'], '.')
+		ax4.set_title('Gate leakage current')
+		ax4.set_xlabel('Gate Voltage [V]')
+		ax4.set_ylabel('Gate Leakage [A]')
+		
+		fig.tight_layout()
+		fig.savefig(sample)
+		plt.show()		
+
+	
+	#----------------------------------------------------------------------		
+	def IVsweep(sample, keithley):
+		'''K2636 IV sweep'''
+		begin_time = time.time()
+		keithley.loadTSP('iv-sweep.tsp')
+		keithley.runTSP()
+		df = keithley.readBuffer()
+		output_name = str(sample + '-iv-sweep.csv')
+		df.to_csv(output_name, sep='\t', index=False)
+		finish_time = time.time()
+		print('IV sweep complete. Elapsed time %.2f mins.' %((finish_time - begin_time)/60))
+		
+	#----------------------------------------------------------------------		
+	def Output(sample, keithley):
+		'''K2636 Output sweeps'''
+		begin_time = time.time()
+		keithley.loadTSP('output-charact.tsp')
+		keithley.runTSP()
+		df = keithley.readBuffer()
+		output_name = str(sample + '-output.csv')
+		df.to_csv(output_name, sep='\t', index=False)
+		finish_time = time.time()
+		print('Output sweeps complete. Elapsed time %.2f mins.' %((finish_time - begin_time)/60))
+		
+		
+	#----------------------------------------------------------------------		
+	def Transfer(sample, keithley):
+		'''K2636 Transfer sweeps'''
+		begin_time = time.time()
+		keithley.loadTSP('transfer-charact.tsp')
+		keithley.runTSP()
+		df = keithley.readBuffer()
+		output_name = str(sample + '-transfer.csv')
+		df.to_csv(output_name, sep='\t', index=False)
+		finish_time = time.time()
+		print('Transfer curves measured. Elapsed time %.2f mins.' %((finish_time - begin_time)/60))
 		
 ########################################################################
 def uploadTSP():
 	'''Connects to keithley, uploads TSP instructions and tells keithley to execute'''
-	print ('BEGIN')
-	#------------------------------------------------------------
 	
 	rm = visa.ResourceManager('@py') #use py-visa backend
-	keithley = K2636(rm, address='ASRL/dev/ttyUSB0', read_term='\n', baudrate=57600)
+	keithley = K2636(rm, address='ASRL/dev/ttyUSB0', read_term='\n', baudrate=57600)	
 	
 	#-------------------------------------------------------------
-	sample = 'znpc-undoped-2p5um-3-with-drain-notearth-and-gate-earth'
-	#sample = 'clean-substrate-floating'
-	
+	sample = 'blank-20um-2'
+	start = time.time()
 	#-------------------------------------------------------------
-	#print ('Uploading TSP script: ')
-	#keithley.loadTSP('TSP-scripts/iv-sweep.tsp')
-	#keithley.runTSP()
-	#df = keithley.readBuffer()
-	#output_name = str(sample + '-iv-sweep.csv')
-	#df.to_csv(output_name, sep='\t', index=False)	
-	
-	print ('Uploading TSP script: ')
-	keithley.loadTSP('TSP-scripts/output-charact.tsp')
-	keithley.runTSP()
-	df = keithley.readBuffer()
-	output_name = str(sample + '-output.csv')
-	df.to_csv(output_name, sep='\t', index=False)
-	
-	print ('Uploading TSP script: ')
-	keithley.loadTSP('TSP-scripts/transfer-charact.tsp')
-	keithley.runTSP()
-	df = keithley.readBuffer()
-	output_name = str(sample + '-transfer.csv')
-	df.to_csv(output_name, sep='\t', index=False)
-	
-	print ('Uploading TSP script: ')
-	keithley.loadTSP('TSP-scripts/gate-leakage.tsp')
-	keithley.runTSP()
-	df = keithley.readBuffer()
-	output_name = str(sample + '-gate-leakage.csv')
-	df.to_csv(output_name, sep='\t', index=False)		
+
+	K2636.IVsweep(sample, keithley)
+	K2636.Output(sample, keithley)
+	K2636.Transfer(sample, keithley)
 	
 	#------------------------------------------------------------
 	
+	K2636.displayMeasurements(sample)
 	rm.close()
 	
 	#------------------------------------------------------------
 	
-	#df1 = pd.read_csv(str(sample+'-iv-sweep.csv'),'\t')
-	#plt.plot(df1['Channel Voltage [V]'], df1['Channel Current [A]'], '.')
-	#plt.show()
-	df2 = pd.read_csv(str(sample+'-output.csv'),'\t')
-	plt.plot(df2['Channel Voltage [V]'], df2['Channel Current [A]'], '.')
-	plt.show()
-	df3 = pd.read_csv(str(sample+'-transfer.csv'),'\t')
-	plt.plot(df3['Gate Voltage [V]'], df3['Channel Current [A]'], '.')
-	plt.show()
-	df4 = pd.read_csv(str(sample+'-gate-leakage.csv'),'\t')
-	plt.plot(df4['Gate Voltage [V]'], df4['Gate Leakage [A]'], '.')
-	plt.show()
-	
+	finish = time.time()
+	print ('Elapsed time %.2f mins' % ((finish - start)/60))
 	print ('END')
 
 if __name__ == '__main__':
