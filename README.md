@@ -30,7 +30,7 @@ The K2636.py script in this folder loads a set of .tsp instructions into the mem
 - matplotlib
 
 # How to hook up the keithley 2636 for three terminal OFET measurements:
-![Alt text](K2636_connections.png?raw=true "Setup")
+![Alt text](.K2636_connections.png?raw=true "Setup")
 
 # Things to note
 - The Keithley 2636 uses 'TSP' rather than the much-loved 'SCPI' which the Keithley 2400 understood.
