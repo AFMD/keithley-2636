@@ -47,7 +47,9 @@ class K2636():
 	def closeConnection(self):
 		'''Closes connection to keithley'''
 		try:
-			rm.close()
+			self.inst.close()
+			print ('Connection closed.')
+		
 		except(NameError):
 			print('Can not close connection as connection was never open!')
 				
@@ -194,8 +196,8 @@ if __name__ == '__main__':
 	'''For testing methods in the K2636 class'''
 	keithley = K2636(address='ASRL/dev/ttyUSB0', read_term='\n', baudrate=57600)	
 	sample = 'blank-20-1'
-	#keithley.IVsweep(sample)
-	keithley.Output(sample)
+	keithley.IVsweep(sample)
+	#keithley.Output(sample)
 	keithley.Transfer(sample)
 	keithley.DisplayMeasurement(sample)
 	keithley.closeConnection()
