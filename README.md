@@ -22,12 +22,7 @@ The K2636.py script in this folder loads a set of .tsp instructions into the mem
 
 
 # requires:
-- PyVisa
-- PyVisa-py
-- numpy
-- pandas
-- python 3
-- matplotlib
+- visa (conda install -c conda-forge pyvisa)
 
 # How to hook up the keithley 2636 for three terminal OFET measurements:
 ![Alt text](.K2636_connections.png?raw=true "Setup")

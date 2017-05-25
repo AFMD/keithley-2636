@@ -20,6 +20,8 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as mplToolba
 import matplotlib.style as style
 from matplotlib.figure import Figure
 
+import k2636 # Driver for keithley 2636
+
 
 class ofet_GUI(QMainWindow):
 	'''This is the main window class for the GUI'''
@@ -64,6 +66,8 @@ class ofet_GUI(QMainWindow):
 		keithleyConAction.setShortcut('Ctrl+C')
 		keithleyConAction.setStatusTip('Reconnect to keithley 2636')        
 		keithleyAction.triggered.connect(self.popupKeithleySettings)
+		keithleyConAction.triggered.connect(self.popupKeithleyConnection)
+		
 		# Add items to menu bars
 		menubar = self.menuBar()
 		fileMenu = menubar.addMenu('&File')
@@ -95,7 +99,9 @@ class ofet_GUI(QMainWindow):
 
 	def popupKeithleySettings(self):
 		self.popupWindow = keithleySettingsWindow()
-
+		
+	def popupKeithleyConnection(self):
+		self.popupWindow = keithleyConnectionWindow()
 
 
 class buttonWidget(QWidget):
@@ -272,6 +278,39 @@ class keithleySettingsWindow(QWidget):
 		self.move((screen.width()-size.width())/2, 
 	          (screen.height()-size.height())/2)        
 
+
+class keithleyConnectionWindow(QWidget):
+	""" This is the keithley connection widget """
+
+	# Define signals to be emitted from widget
+	statusUpdate = pyqtSignal(str)
+
+	def __init__(self):
+		super().__init__()
+		self.initWidget()
+
+	def initWidget(self):
+
+		# Set widget layout
+		grid = QGridLayout()
+		self.setLayout(grid)
+	
+		# Connection status box
+		
+		
+		# Window setup
+		self.resize(100, 50)
+		self.centre()
+		self.setWindowTitle('K2636 - Connecting')
+		self.show()        
+
+	def centre(self):
+		'''Find screen size and place in centre'''
+
+		screen = QDesktopWidget().screenGeometry()
+		size = self.geometry()
+		self.move((screen.width()-size.width())/2, 
+		          (screen.height()-size.height())/2)        
 
 if __name__ == '__main__':
 
