@@ -14,8 +14,6 @@ import matplotlib.pyplot as plt
 import matplotlib.style as style
 import time
 
-__name__ = 'k2636'
-
 ########################################################################
 class K2636():
 	"""Class for Keithley control"""
@@ -29,7 +27,7 @@ class K2636():
 		except:
 			print ('No connection to keithly made.')
 	#----------------------------------------------------------------------
-	def makeConnection (self, address, read_term, baudrate):
+	def makeConnection (self, rm, address, read_term, baudrate):
 		"""Make initial connection to instrument"""
 		 
 		if 'ttyS' or 'ttyUSB' in str(address) :
@@ -49,7 +47,9 @@ class K2636():
 	def closeConnection(self):
 		'''Closes connection to keithley'''
 		try:
-			rm.close()
+			self.inst.close()
+			print ('Connection closed.')
+		
 		except(NameError):
 			print('Can not close connection as connection was never open!')
 				
@@ -195,9 +195,9 @@ class K2636():
 if __name__ == '__main__':
 	'''For testing methods in the K2636 class'''
 	keithley = K2636(address='ASRL/dev/ttyUSB0', read_term='\n', baudrate=57600)	
-	sample = 'test'
+	sample = 'blank-20-1'
 	keithley.IVsweep(sample)
-	keithley.Output(sample)
+	#keithley.Output(sample)
 	keithley.Transfer(sample)
 	keithley.DisplayMeasurement(sample)
 	keithley.closeConnection()
