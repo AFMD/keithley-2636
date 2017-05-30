@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/home/ross/.anaconda3/bin/python
 #coding:utf-8
 
 """
@@ -52,6 +52,9 @@ class K2636():
 		
 		except(NameError):
 			print('Can not close connection as connection was never open!')
+			
+		except(AttributeError):
+			print('Can not close connection as connection was never open!')			
 				
 	#----------------------------------------------------------------------		
 	def _write(self, m):
