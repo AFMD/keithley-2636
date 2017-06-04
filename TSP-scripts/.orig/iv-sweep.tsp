@@ -41,10 +41,10 @@ display.smua.measure.func = display.MEASURE_DCAMPS
 display.screen = display.SMUA
 
 smua.source.output = smub.OUTPUT_ON
-smua.source.levelv = -5
+smua.source.levelv = -50
 delay(5)
 
-for Vd = -50, 50 do
+for Vd = -500, 500 do
         smua.source.levelv = Vd * (0.1)
         smua.measure.i(smua.nvbuffer1)
         smub.measure.v(smub.nvbuffer1)

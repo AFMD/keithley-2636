@@ -2,7 +2,7 @@ reset()
 display.clear()
 
 -- Beep in excitement
-beeper.beep(1, 600)
+beeper.beep(1, 700)
 
 
 -- TRANSFER CHARACTERISTICS
@@ -31,24 +31,28 @@ smua.source.func = smua.OUTPUT_DCVOLTS
 smua.sense = smua.SENSE_LOCAL
 smua.source.autorangev = smua.AUTORANGE_ON
 -- Set complaince to 1uA
-smua.source.limiti = 1e-6
-smua.measure.rangei = 1e-6
+smua.source.limiti = 1e-5
+smua.measure.rangei = 1e-5
 smub.source.limiti = 1e-7
-smua.measure.nplc = 1.0
+smua.measure.nplc = 1.00
 
 -- Measurement
 display.smua.measure.func = display.MEASURE_DCAMPS
 display.screen = display.SMUA
 
+smub.source.output = smua.OUTPUT_ON
 smua.source.output = smub.OUTPUT_ON
-smua.source.levelv = -5
-delay(5)
 
-for Vd = -50, 50 do
-        smua.source.levelv = Vd * (0.1)
+
+for Vg = -5, 5 do
+    smub.source.levelv = Vg * (10)
+    delay(5)
+    for Vd = -25, 25 do
+        smua.source.levelv = Vd * 2
         smua.measure.i(smua.nvbuffer1)
         smub.measure.v(smub.nvbuffer1)
-        delay(0.1)
+        delay(0.5)
+    end
 end
 
 smua.source.output = smua.OUTPUT_OFF

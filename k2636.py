@@ -2,8 +2,8 @@
 #coding:utf-8
 
 """
-  Author:  Ross
-  Purpose: 'Simple' driver for Keithley 2636
+  Author:  Ross <peregrine.warren@physics.ox.ac.uk>
+  Purpose: Simple' driver for Keithley 2636
   Created: 07/03/17
 """
 
@@ -25,30 +25,32 @@ class K2636():
 			rm = visa.ResourceManager('@py') #use py-visa backend
 			self.makeConnection(rm, address, read_term, baudrate)
 		except:
-			print ('No connection to keithly made.')
+			raise ConnectionError()
+		
 	#----------------------------------------------------------------------
 	def makeConnection (self, rm, address, read_term, baudrate):
 		"""Make initial connection to instrument"""
-		 
-		if 'ttyS' or 'ttyUSB' in str(address) :
-			# Connection via SERIAL
-			print ('Connecting to Keithley via %s' %address)
-			self.inst = rm.open_resource(address)
-			self.inst.read_termination = str(read_term)
-			self.inst.baud_rate = baudrate
-			print (self.inst.query('*IDN?'))
-			
-		if 'GPIB' in str(address):
-			# Connection via GPIB
-			print ('GPIB not programmed yet. Please use serial')
-			sys.exit()
-			
+		
+		try:
+			if 'ttyS' or 'ttyUSB' in str(address) :
+				# Connection via SERIAL
+				self.inst = rm.open_resource(address)
+				self.inst.read_termination = str(read_term)
+				self.inst.baud_rate = baudrate
+				
+			if 'GPIB' in str(address):
+				# Connection via GPIB
+				print ('GPIB not programmed yet. Please use serial')
+				sys.exit()
+				
+		except:
+			raise ConnectionError()
 	#----------------------------------------------------------------------		
 	def closeConnection(self):
 		'''Closes connection to keithley'''
 		try:
 			self.inst.close()
-			print ('Connection closed.')
+			#print ('Connection closed.')
 		
 		except(NameError):
 			print('Can not close connection as connection was never open!')
@@ -166,7 +168,7 @@ class K2636():
 			begin_time = time.time()
 			self.loadTSP('output-charact.tsp')
 			self.runTSP()
-			df = keithley.readBuffer()
+			df = self.readBuffer()
 			output_name = str(sample + '-output.csv')
 			df.to_csv(output_name, sep='\t', index=False)
 			finish_time = time.time()
