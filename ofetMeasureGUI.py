@@ -131,8 +131,9 @@ class mainWindow(QMainWindow):
 
         def showFileOpen(self):
                 '''Pop up for file selection'''
-
-                fname = QFileDialog.getOpenFileName(self, 'Open file', '/home/ross/physics/data/transistor/blank-chip-results/23-05-2017')
+                
+                filter1 = '*.csv'
+                fname = QFileDialog.getOpenFileName(self, 'Open file', filter=filter1)
                 if fname[0]:
                         try:
                                 df = pd.read_csv(fname[0], '\t')
@@ -198,7 +199,8 @@ class keithleyButtonWidget(QWidget):
                 if ok:
                         if text != '': # to catch empty input
                                 self.SampleName = str(text)
-                else:	
+                else:
+                        self.SampleName = None
                         self.cancelSignal.emit() # doesnt link to anything yet
 
         def hideButtons(self):

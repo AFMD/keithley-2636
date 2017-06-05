@@ -41,6 +41,8 @@ class GUI(ofetMeasureGUI.mainWindow):
     #----------------------------------------------------------------------    
     def ivSweep(self):
         try:
+            if self.buttonWidget.SampleName == None:
+                raise AttributeError                
             self.params['Sample name'] = self.buttonWidget.SampleName
             self.statusbar.showMessage('Performing IV Sweep...')
             self.buttonWidget.hideButtons()
@@ -48,12 +50,14 @@ class GUI(ofetMeasureGUI.mainWindow):
             self.measureThread = measureThread(self.params) # create instance of thread
             self.measureThread.finishedSig.connect(self.done) # what to do when thread has finished
             self.measureThread.start() # run thread
-        except AttributeError:
+        except AttributeError or KeyError:
             self.popupWarning.showWindow('No sample name given!')
 
     #----------------------------------------------------------------------
     def outputSweep(self, event):
         try:
+            if self.buttonWidget.SampleName == None:
+                raise AttributeError                        
             self.params['Sample name'] = self.buttonWidget.SampleName
             self.statusbar.showMessage('Performing Output Sweep...')
             self.buttonWidget.hideButtons()
@@ -67,6 +71,8 @@ class GUI(ofetMeasureGUI.mainWindow):
     #----------------------------------------------------------------------
     def transferSweep(self, event):
         try:
+            if self.buttonWidget.SampleName == None:
+                raise AttributeError            
             self.params['Sample name'] = self.buttonWidget.SampleName
             self.statusbar.showMessage('Performing Transfer Sweep...')
             self.buttonWidget.hideButtons()
@@ -81,6 +87,8 @@ class GUI(ofetMeasureGUI.mainWindow):
     #----------------------------------------------------------------------
     def allMeasurements(self, event):
         try:
+            if self.buttonWidget.SampleName == None:
+                raise AttributeError
             self.params['Sample name'] = self.buttonWidget.SampleName
             self.statusbar.showMessage('Performing all...')
             self.buttonWidget.hideButtons()
