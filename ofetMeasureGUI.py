@@ -185,8 +185,15 @@ class keithleyButtonWidget(QWidget):
 
 
         def showSampleNameInput(self):
+                
+                sampleNameInput = QInputDialog()
+                
+                try:
+                        text, ok = sampleNameInput.getText(self, 'Sample Name', 'Enter sample name:', QLineEdit.Normal, str(self.SampleName))
+                        
+                except AttributeError:
+                        text, ok = sampleNameInput.getText(self, 'Sample Name', 'Enter sample name:')
 
-                text, ok = QInputDialog.getText(self, 'Sample Name', 'Enter sample name:')
 
                 if ok:
                         if text != '': # to catch empty input
