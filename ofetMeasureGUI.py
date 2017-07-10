@@ -57,16 +57,16 @@ class mainWindow(QMainWindow):
                 # Matplotlib control widget
                 self.dockWidget2 = QDockWidget('Plotting controls')
                 self.dockWidget2.setWidget(mplToolbar(self.mainWidget, self))
-                self.addDockWidget(Qt.BottomDockWidgetArea, self.dockWidget2)   
+                self.addDockWidget(Qt.BottomDockWidgetArea, self.dockWidget2)
 
                 ## Menu bar setup
                 # Shutdown program
-                exitAction = QAction('&Exit', self) 
+                exitAction = QAction('&Exit', self)
                 exitAction.setShortcut('Ctrl+Q')
                 exitAction.setStatusTip('Exit application')
                 exitAction.triggered.connect(qApp.quit)
                 # Load old data
-                loadAction = QAction('&Load', self) 
+                loadAction = QAction('&Load', self)
                 loadAction.setShortcut('Ctrl+L')
                 loadAction.setStatusTip('Load data to be displayed')
                 loadAction.triggered.connect(self.showFileOpen)
@@ -81,7 +81,7 @@ class mainWindow(QMainWindow):
                 keithleyAction.setStatusTip('Adjust scan parameters')
                 keithleyConAction = QAction('Connect', self)
                 keithleyConAction.setShortcut('Ctrl+J')
-                keithleyConAction.setStatusTip('Reconnect to keithley 2636')        
+                keithleyConAction.setStatusTip('Reconnect to keithley 2636')
                 keithleyAction.triggered.connect(self.keithleySettingsWindow.show)
                 keithleyConAction.triggered.connect(self.keithleyConnectionWindow.show)
 
@@ -92,7 +92,7 @@ class mainWindow(QMainWindow):
                 fileMenu.addAction(clearAction)
                 fileMenu.addSeparator()
                 fileMenu.addAction(exitAction)
-                keithleyMenu = menubar.addMenu('&Keithley')        
+                keithleyMenu = menubar.addMenu('&Keithley')
                 keithleyMenu.addAction(keithleyConAction)
                 keithleyMenu.addAction(keithleyAction)
 
@@ -125,13 +125,13 @@ class mainWindow(QMainWindow):
 
                 screen = QDesktopWidget().screenGeometry()
                 size = self.geometry()
-                self.move((screen.width()-size.width())/2, 
+                self.move((screen.width()-size.width())/2,
                           (screen.height()-size.height())/2)
 
 
         def showFileOpen(self):
                 '''Pop up for file selection'''
-                
+
                 filter1 = '*.csv'
                 fname = QFileDialog.getOpenFileName(self, 'Open file', filter=filter1)
                 if fname[0]:
@@ -140,11 +140,13 @@ class mainWindow(QMainWindow):
                                 if fnmatch.fnmatch(fname[0], '*iv-sweep.csv'):
                                         self.mainWidget.drawIV(df)
                                 if fnmatch.fnmatch(fname[0], '*output.csv'):
-                                        self.mainWidget.drawOutput(df)	
+                                        self.mainWidget.drawOutput(df)
                                 if fnmatch.fnmatch(fname[0], '*transfer.csv'):
-                                        self.mainWidget.drawTransfer(df)			
+                                        self.mainWidget.drawTransfer(df)
+                                if fnmatch.fnmatch(fname[0], '*gate-leakage.csv'):
+                                        self.mainWidget.drawLeakage(df)
                         except:
-                                self.popupWarning.showWindow('Unsupported file.')	
+                                self.popupWarning.showWindow('Unsupported file.')
 
         def updateStatusbar(self, s):
                 self.statusbar.showMessage(s)
@@ -182,16 +184,16 @@ class keithleyButtonWidget(QWidget):
 
                 self.allBtn = QPushButton('ALL')
                 grid.addWidget(self.allBtn, 1, 4)
-                self.allBtn.clicked.connect(self.showSampleNameInput)		
+                self.allBtn.clicked.connect(self.showSampleNameInput)
 
 
         def showSampleNameInput(self):
-                
+
                 sampleNameInput = QInputDialog()
-                
+
                 try:
                         text, ok = sampleNameInput.getText(self, 'Sample Name', 'Enter sample name:', QLineEdit.Normal, str(self.SampleName))
-                        
+
                 except AttributeError:
                         text, ok = sampleNameInput.getText(self, 'Sample Name', 'Enter sample name:')
 
@@ -212,7 +214,7 @@ class keithleyButtonWidget(QWidget):
         def showButtons(self):
                 self.ivBtn.setEnabled(True)
                 self.outputBtn.setEnabled(True)
-                self.transferBtn.setEnabled(True)		
+                self.transferBtn.setEnabled(True)
                 self.allBtn.setEnabled(True)
 
 
@@ -225,13 +227,13 @@ class mplWidget(FigureCanvas):
         def initWidget(self, parent = None, width = 5, height = 4, dpi = 100):
 
                 style.use('ggplot')
-                
+
                 self.fig = Figure(figsize=(width, height), dpi=dpi)
                 self.ax1 = self.fig.add_subplot(111)
 
                 self.ax1.set_title('IV Sweep')
                 self.ax1.set_xlabel('Channel Voltage [V]')
-                self.ax1.set_ylabel('Channel Current [A]')                
+                self.ax1.set_ylabel('Channel Current [A]')
 
                 FigureCanvas.__init__(self, self.fig)
                 self.setParent(parent)
@@ -245,7 +247,7 @@ class mplWidget(FigureCanvas):
                 self.ax1.plot(df['Channel Voltage [V]'], df['Channel Current [A]'], '.')
                 self.ax1.set_title('IV Sweep')
                 self.ax1.set_xlabel('Channel Voltage [V]')
-                self.ax1.set_ylabel('Channel Current [A]')  		
+                self.ax1.set_ylabel('Channel Current [A]')
                 FigureCanvas.draw(self)
 
         def drawOutput(self, df):
@@ -254,16 +256,32 @@ class mplWidget(FigureCanvas):
                 self.ax1.plot(df['Channel Voltage [V]'], df['Channel Current [A]'], '.')
                 self.ax1.set_title('Output curves')
                 self.ax1.set_xlabel('Channel Voltage [V]')
-                self.ax1.set_ylabel('Channel Current [A]')			
+                self.ax1.set_ylabel('Channel Current [A]')
                 FigureCanvas.draw(self)
 
         def drawTransfer(self, df):
                 '''Take a data frame a draw it'''
                 self.ax1 = self.fig.add_subplot(111)
-                self.ax1.plot(df['Gate Voltage [V]'], df['Channel Current [A]'], '.')
+                self.ax1.semilogy(df['Gate Voltage [V]'], abs(df['Channel Current [A]']), '.')
                 self.ax1.set_title('Transfer Curve')
                 self.ax1.set_xlabel('Gate Voltage [V]')
-                self.ax1.set_ylabel('Channel Current [A]') 		
+                self.ax1.set_ylabel('Channel Current [A]')
+                # Uncomment to plot geat leakage also
+                #self.ax2 = self.fig.add_subplot(122)
+                #self.ax2.plot(df['Gate Voltage [V]'], df['Gate Leakage [A]'], '.')
+                #self.ax2.set_title('Leakage from gate to drain')
+                #self.ax2.set_xlabel('Gate Voltage [V]')
+                #self.ax2.set_ylabel('Gate Leakage [A]')
+                self.fig.tight_layout()
+                FigureCanvas.draw(self)
+
+        def drawLeakage(self, df):
+                '''Take a data frame a draw it'''
+                self.ax1 = self.fig.add_subplot(111)
+                self.ax1.plot(df['Gate Voltage [V]'], df['Gate Leakage [A]'], '.')
+                self.ax1.set_title('Leakage from gate to drain')
+                self.ax1.set_xlabel('Gate Voltage [V]')
+                self.ax1.set_ylabel('Gate Leakage [A]')
                 FigureCanvas.draw(self)
 
         def drawAll(self, sample):
@@ -272,13 +290,13 @@ class mplWidget(FigureCanvas):
                 df1 = pd.read_csv(str(sample + '-iv-sweep.csv'), '\t')
                 df2 = pd.read_csv(str(sample + '-output.csv'), '\t')
                 df3 = pd.read_csv(str(sample + '-transfer.csv'), '\t')
-                
+
                 self.fig.clear()
                 self.ax1 = self.fig.add_subplot(221)
                 self.ax2 = self.fig.add_subplot(222)
                 self.ax3 = self.fig.add_subplot(223)
                 self.ax4 = self.fig.add_subplot(224)
-                
+
                 self.ax1.plot(df1['Channel Voltage [V]'], df1['Channel Current [A]'], '.')
                 self.ax1.set_title('I-V sweep')
                 self.ax1.set_xlabel('Channel Voltage [V]')
@@ -287,20 +305,20 @@ class mplWidget(FigureCanvas):
                 self.ax2.plot(df2['Channel Voltage [V]'], df2['Channel Current [A]'], '.')
                 self.ax2.set_title('Output curves')
                 self.ax2.set_xlabel('Channel Voltage [V]')
-                self.ax2.set_ylabel('Channel Current [A]')	
+                self.ax2.set_ylabel('Channel Current [A]')
 
                 self.ax3.plot(df3['Gate Voltage [V]'], df3['Channel Current [A]'], '.')
                 self.ax3.set_title('Transfer Curves')
                 self.ax3.set_xlabel('Gate Voltage [V]')
-                self.ax3.set_ylabel('Channel Current [A]')	
+                self.ax3.set_ylabel('Channel Current [A]')
 
                 self.ax4.plot(df3['Gate Voltage [V]'], df3['Gate Leakage [A]'], '.')
                 self.ax4.set_title('Gate leakage current')
                 self.ax4.set_xlabel('Gate Voltage [V]')
-                self.ax4.set_ylabel('Gate Leakage [A]')		
-                
+                self.ax4.set_ylabel('Gate Leakage [A]')
+
                 self.fig.tight_layout()
-                FigureCanvas.draw(self)		
+                FigureCanvas.draw(self)
 
         def clear(self):
                 '''Clear the plot'''
@@ -345,7 +363,7 @@ class keithleySettingsWindow(QWidget):
                 ivStepV = QDoubleSpinBox(self)
                 grid.addWidget(ivStepV, 2, 4)
                 ivStepT = QDoubleSpinBox(self)
-                grid.addWidget(ivStepT, 2, 5)		
+                grid.addWidget(ivStepT, 2, 5)
                 #ivBtn.clicked.connect(self.ivSweep)
 
                 # Ouptut curve Settings
@@ -356,7 +374,7 @@ class keithleySettingsWindow(QWidget):
                 outputStepV = QDoubleSpinBox(self)
                 grid.addWidget(outputStepV, 3, 4)
                 outputStepT = QDoubleSpinBox(self)
-                grid.addWidget(outputStepT, 3, 5)		
+                grid.addWidget(outputStepT, 3, 5)
                 #ivBtn.clicked.connect(self.ivSweep)
 
                 # transfer Settings
@@ -367,8 +385,8 @@ class keithleySettingsWindow(QWidget):
                 transferStepV = QDoubleSpinBox(self)
                 grid.addWidget(transferStepV, 4, 4)
                 transferStepT = QDoubleSpinBox(self)
-                grid.addWidget(transferStepT, 4, 5)		
-                #ivBtn.clicked.connect(self.ivSweep)		
+                grid.addWidget(transferStepT, 4, 5)
+                #ivBtn.clicked.connect(self.ivSweep)
 
                 # Window setup
                 #self.resize(400, 300)
@@ -381,7 +399,7 @@ class keithleySettingsWindow(QWidget):
 
                 screen = QDesktopWidget().screenGeometry()
                 size = self.geometry()
-                self.move((screen.width()-size.width())/2, 
+                self.move((screen.width()-size.width())/2,
                           (screen.height()-size.height())/2)
 
 
@@ -411,13 +429,13 @@ class keithleyConnectionWindow(QWidget):
                 # Window setup
                 self.resize(300, 100)
                 self.centre()
-                self.setWindowTitle('K2636 - Connecting')    
+                self.setWindowTitle('K2636 - Connecting')
 
         def centre(self):
                 '''Find screen size and place in centre'''
                 screen = QDesktopWidget().screenGeometry()
                 size = self.geometry()
-                self.move((screen.width()-size.width())/2, 
+                self.move((screen.width()-size.width())/2,
                           (screen.height()-size.height())/2)
 
         def reconnect2keithley(self):
@@ -462,13 +480,13 @@ class warningWindow(QWidget):
                 '''Find screen size and place in centre'''
                 screen = QDesktopWidget().screenGeometry()
                 size = self.geometry()
-                self.move((screen.width()-size.width())/2, 
+                self.move((screen.width()-size.width())/2,
                           (screen.height()-size.height())/2)
 
         def showWindow(self, s):
                 '''Write error message and show window'''
                 self.warning.setText(s)
-                self.show() 
+                self.show()
 
 if __name__ == '__main__':
 

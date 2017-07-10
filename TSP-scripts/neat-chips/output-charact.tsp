@@ -4,15 +4,6 @@ display.clear()
 -- Beep in excitement
 beeper.beep(1, 700)
 
--- PARAMETERS
-Vdmin = -50
-Vdmax = 10
-Vdstep = 0.04
-
-Vgmin = 0
-Vgmax = 8
-Vgstep = -5
-
 
 -- TRANSFER CHARACTERISTICS
 -- Clear buffers and make sure the right thing is recorded
@@ -39,28 +30,26 @@ smub.source.levelv = 0.0
 smua.source.func = smua.OUTPUT_DCVOLTS
 smua.sense = smua.SENSE_LOCAL
 smua.source.autorangev = smua.AUTORANGE_ON
-
--- COMPLIANCE
-smua.source.limiti = 10e-6
-smua.measure.rangei = 10e-6
-smub.source.limiti = 10e-9
+-- Set complaince to 1uA
+smua.source.limiti = 1e-6
+smua.measure.rangei = 1e-6
+smub.source.limiti = 10e-10
 smua.measure.nplc = 1.00
 
--- MEASUREMENT
-
+-- Measurement
 display.smua.measure.func = display.MEASURE_DCAMPS
 display.screen = display.SMUA
 
-smua.source.output = smua.OUTPUT_ON
-smub.source.output = smub.OUTPUT_ON
+smub.source.output = smua.OUTPUT_ON
+smua.source.output = smub.OUTPUT_ON
 
-for Vg = Vgmin, Vgmax do
-    smub.source.levelv = Vg * (Vgstep)
-    delay(60)
-    smua.source.levelv = Vdmin * Vdstep
+
+for Vg = -5, 0 do
+    smub.source.levelv = Vg * (8)
+    smua.source.levelv = -50
     delay(10)
-    for Vd = Vdmin, Vdmax do
-        smua.source.levelv = Vd * Vdstep
+    for Vd = -50, 10 do
+        smua.source.levelv = Vd
         smua.measure.i(smua.nvbuffer1)
         smub.measure.v(smub.nvbuffer1)
         delay(0.2)
