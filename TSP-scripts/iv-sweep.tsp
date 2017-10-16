@@ -6,9 +6,9 @@ beeper.beep(1, 600)
 
 -- PARAMETERS
 
-Vdmin = -50
-Vdmax = 50
-Vdstep  = 0.02
+Vdmin = 0
+Vdmax = 100
+Vdstep  = 1
 
 
 -- Clear buffers and make sure the right thing is recorded
@@ -39,11 +39,11 @@ smua.source.levelv = Vdmin * Vdstep
 smua.source.output = smua.OUTPUT_ON
 display.smua.measure.func = display.MEASURE_DCAMPS
 display.screen = display.SMUA
-delay(20)
+delay(2)
 
 for Vd = Vdmin, Vdmax do
         smua.source.levelv = Vd * Vdstep
+        delay(0.5)
         smua.measure.i(smua.nvbuffer1)
-        delay(0.2)
 end
 smua.source.output = smua.OUTPUT_OFF

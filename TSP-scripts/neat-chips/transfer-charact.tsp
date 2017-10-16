@@ -31,9 +31,9 @@ smua.source.func = smua.OUTPUT_DCVOLTS
 smua.sense = smua.SENSE_LOCAL
 smua.source.autorangev = smua.AUTORANGE_ON
 -- Set complaince to 1uA
-smua.source.limiti = 1e-6
-smua.measure.rangei = 1e-6
-smub.source.limiti = 10e-10
+smua.source.limiti = 10e-6
+smua.measure.rangei = 10e-6
+smub.source.limiti = 10e-8
 smua.measure.nplc = 1.00
 
 -- Measurement
@@ -46,9 +46,9 @@ smua.source.output = smub.OUTPUT_ON
 smua.source.levelv = 0
 delay(10)
 
-for Vg = -10, 1 do
-    smub.source.levelv = Vg * 5
-    delay(10)
+for Vg = 0, 50 do
+    smub.source.levelv = Vg * (-1)
+    delay(2)
     smua.measure.i(smua.nvbuffer1)
     smub.measure.i(smub.nvbuffer1)
 end

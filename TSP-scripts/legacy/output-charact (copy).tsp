@@ -5,13 +5,13 @@ display.clear()
 beeper.beep(1, 700)
 
 -- PARAMETERS
-Vdmin = 0
-Vdmax = 100
-Vdstep = -1
+Vdmin = -50
+Vdmax = 10
+Vdstep = 1
 
 Vgmin = 0
 Vgmax = 5
-Vgstep = -30
+Vgstep = -10
 
 
 -- TRANSFER CHARACTERISTICS
@@ -41,9 +41,9 @@ smua.sense = smua.SENSE_LOCAL
 smua.source.autorangev = smua.AUTORANGE_ON
 
 -- COMPLIANCE
-smua.source.limiti = 1e-5
+smua.source.limiti = 10e-6
 smua.measure.rangei = 10e-6
-smub.source.limiti = 1e-7
+smub.source.limiti = 10e-8
 smua.measure.nplc = 1.00
 
 -- MEASUREMENT
@@ -56,13 +56,14 @@ smub.source.output = smub.OUTPUT_ON
 
 for Vg = Vgmin, Vgmax do
     smub.source.levelv = Vg * (Vgstep)
+    delay(60)
     smua.source.levelv = Vdmin * Vdstep
-    delay(20)
+    delay(10)
     for Vd = Vdmin, Vdmax do
         smua.source.levelv = Vd * Vdstep
-        delay(0.4)
         smua.measure.i(smua.nvbuffer1)
         smub.measure.i(smub.nvbuffer1)
+        delay(0.4)
     end
 end
 

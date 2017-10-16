@@ -23,6 +23,9 @@ The K2636.py script in this folder loads a set of .tsp instructions into the mem
 
 # requires:
 - visa (conda install -c conda-forge pyvisa)
+- for remote control:
+	export XKB_DEFAULT_RULES=base
+	export QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
 
 # How to hook up the keithley 2636 for three terminal OFET measurements:
 ![Alt text](.K2636_connections.png?raw=true "Setup")
