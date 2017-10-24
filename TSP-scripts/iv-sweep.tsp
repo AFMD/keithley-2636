@@ -11,5 +11,10 @@ format.data = format.ASCII
 smua.nvbuffer1.appendmode = 1
 smua.measure.count = 1
 
+-- Set compliance
+smua.source.limiti = 10e-3
+
+-- Sweep (channel, start V, end V, settling time, points)
 SweepVLinMeasureI(smua, -1.4, 1, 1E-3, 1000)
+
 
