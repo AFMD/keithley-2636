@@ -40,9 +40,17 @@ smua.measure.nplc = 1.0
 display.smua.measure.func = display.MEASURE_DCAMPS
 display.screen = display.SMUA
 
+<<<<<<< Updated upstream
 smua.source.output = smub.OUTPUT_ON
 smua.source.levelv = -50
 delay(5)
+=======
+-- Set display
+display.screen = display.SMUA
+
+-- Sweep (channel, start V, end V, settling time, points)
+SweepVLinMeasureI(smua, -50, 50, 1E-3, 1000)
+>>>>>>> Stashed changes
 
 for Vd = -500, 500 do
         smua.source.levelv = Vd * (0.1)

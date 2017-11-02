@@ -10,6 +10,7 @@
 import visa
 import sys
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.style as style
 import time
@@ -93,12 +94,32 @@ class K2636():
 	#----------------------------------------------------------------------		
 	def readBuffer(self):
 		'''Read specified buffer in keithley memory and return a pandas array'''
+<<<<<<< Updated upstream:K2636.py
 		vg = [float(x) for x in self._query('printbuffer(1, smub.nvbuffer1.n, smub.nvbuffer1.sourcevalues)').split(',')]
 		ig = [float(x) for x in self._query('printbuffer(1, smub.nvbuffer1.n, smub.nvbuffer1.readings)').split(',')]
 		vd = [float(x) for x in self._query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)').split(',')]
 		c = [float(x) for x in self._query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
 		
 		df = pd.DataFrame({'Gate Voltage [V]': vg, 'Channel Voltage [V]' : vd, 'Channel Current [A]': c, 'Gate Leakage [A]': ig})
+=======
+		
+		buffer_read = 1
+		data = []
+		while buffer_read != '':
+			buffer_read = self._query('print()')
+			if buffer_read == '':
+				pass
+			else:
+				data.append(buffer_read.split(','))
+		data.pop(0)
+		data = np.transpose(data)
+		gate_v = data[0]
+		gate_i = data[1]
+		drain_i = data[2]
+		drain_v = data[3]
+
+		df = pd.DataFrame({'Gate Voltage [V]': gate_v, 'Channel Voltage [V]' : drain_v, 'Channel Current [A]': drain_i, 'Gate Leakage [A]': gate_i})
+>>>>>>> Stashed changes:k2636.py
 		return df
 	
 	#----------------------------------------------------------------------		
