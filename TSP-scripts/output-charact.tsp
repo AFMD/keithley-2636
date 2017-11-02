@@ -6,12 +6,12 @@ beeper.beep(1, 700)
 
 -- PARAMETERS
 Vdmin = 0
-Vdmax = 100
+Vdmax = 50
 Vdstep = -1
 
 Vgmin = 0
 Vgmax = 5
-Vgstep = -30
+Vgstep = -10
 
 
 -- TRANSFER CHARACTERISTICS
