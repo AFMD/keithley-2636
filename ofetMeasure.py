@@ -1,212 +1,171 @@
-#!/home/ross/.anaconda3/bin/python
-#coding:utf-8
-
 """
-  Author:  Ross <peregrine.warren@physics.ox.ac.uk>
-  Purpose: OFET measurement main program linking gui and measurement thread
-  Created: 01/06/17
+OFET measurement main program linking gui and measurement thread.
+
+Author:  Ross <peregrine dot warren at physics dot ox dot ac dot uk>
 """
 
-import ofetMeasureGUI # GUI
-import k2636 # driver
-
+import ofetMeasureGUI  # GUI
+import k2636  # driver
 import sys
-import time
 import pandas as pd
 from PyQt5.QtCore import QThread, pyqtSignal
-from PyQt5.QtWidgets import QApplication, QMainWindow
-       
-        
-########################################################################
-class GUI(ofetMeasureGUI.mainWindow):
-    """ GUI linked to measurement thread """
+from PyQt5.QtWidgets import QApplication
 
-    #----------------------------------------------------------------------
+
+class GUI(ofetMeasureGUI.mainWindow):
+    """GUI linked to measurement thread."""
+
     def __init__(self):
-        """ Take GUI and add measurement thread connection """
+        """Take GUI and add measurement thread connection."""
         super().__init__()
-        self.params = {} # for storing parameters
+        self.params = {}  # for storing parameters
         self.setupConnections()
-        
-        
-    #----------------------------------------------------------------------
+
     def setupConnections(self):
-        """ Connecting the GUI to the measurement thread """
-        
+        """Connect the GUI to the measurement thread."""
         self.buttonWidget.ivBtn.clicked.connect(self.ivSweep)
         self.buttonWidget.outputBtn.clicked.connect(self.outputSweep)
         self.buttonWidget.transferBtn.clicked.connect(self.transferSweep)
         self.buttonWidget.allBtn.clicked.connect(self.allMeasurements)
-    
-    #----------------------------------------------------------------------    
+
     def ivSweep(self):
+        """Perform IV sweep."""
         try:
-            if self.buttonWidget.SampleName == None:
-                raise AttributeError                
+            if self.buttonWidget.SampleName is None:
+                raise AttributeError
             self.params['Sample name'] = self.buttonWidget.SampleName
             self.statusbar.showMessage('Performing IV Sweep...')
             self.buttonWidget.hideButtons()
             self.params['Measurement'] = 'iv-sweep'
-            self.measureThread = measureThread(self.params) # create instance of thread
-            self.measureThread.finishedSig.connect(self.done) # what to do when thread has finished
-            self.measureThread.start() # run thread
+            self.measureThread = measureThread(self.params)
+            self.measureThread.finishedSig.connect(self.done)
+            self.measureThread.start()
         except AttributeError or KeyError:
             self.popupWarning.showWindow('No sample name given!')
 
-    #----------------------------------------------------------------------
     def outputSweep(self, event):
+        """Perform output sweep."""
         try:
-            if self.buttonWidget.SampleName == None:
-                raise AttributeError                        
+            if self.buttonWidget.SampleName is None:
+                raise AttributeError
             self.params['Sample name'] = self.buttonWidget.SampleName
             self.statusbar.showMessage('Performing Output Sweep...')
             self.buttonWidget.hideButtons()
             self.params['Measurement'] = 'output'
-            self.measureThread = measureThread(self.params) # create instance of thread
-            self.measureThread.finishedSig.connect(self.done) # what to do when thread has finished
-            self.measureThread.start() # run thread
+            self.measureThread = measureThread(self.params)
+            self.measureThread.finishedSig.connect(self.done)
+            self.measureThread.start()
         except AttributeError:
-            self.popupWarning.showWindow('No sample name given!')            
+            self.popupWarning.showWindow('No sample name given!')
 
-    #----------------------------------------------------------------------
     def transferSweep(self, event):
+        """Perform transfer sweep."""
         try:
-            if self.buttonWidget.SampleName == None:
-                raise AttributeError            
+            if self.buttonWidget.SampleName is None:
+                raise AttributeError
             self.params['Sample name'] = self.buttonWidget.SampleName
             self.statusbar.showMessage('Performing Transfer Sweep...')
             self.buttonWidget.hideButtons()
             self.params['Measurement'] = 'transfer'
-            self.measureThread = measureThread(self.params) # create instance of thread
-            self.measureThread.finishedSig.connect(self.done) # what to do when thread has finished
-            self.measureThread.errorSig.connect(self.error) # what to do when an error happens
-            self.measureThread.start() # run thread
+            self.measureThread = measureThread(self.params)
+            self.measureThread.finishedSig.connect(self.done)
+            self.measureThread.errorSig.connect(self.error)
+            self.measureThread.start()
         except AttributeError:
-            self.popupWarning.showWindow('No sample name given!')             
-        
-    #----------------------------------------------------------------------
+            self.popupWarning.showWindow('No sample name given!')
+
     def allMeasurements(self, event):
+        """Perform all sweeps."""
         try:
-            if self.buttonWidget.SampleName == None:
+            if self.buttonWidget.SampleName is None:
                 raise AttributeError
             self.params['Sample name'] = self.buttonWidget.SampleName
             self.statusbar.showMessage('Performing all...')
             self.buttonWidget.hideButtons()
             self.params['Measurement'] = 'all'
-            self.measureThread = measureThread(self.params) # create instance of thread
-            self.measureThread.finishedSig.connect(self.done) # what to do when thread has finished
-            self.measureThread.errorSig.connect(self.error) # what to do when an error happens
-            self.measureThread.start() # run thread
+            self.measureThread = measureThread(self.params)
+            self.measureThread.finishedSig.connect(self.done)
+            self.measureThread.errorSig.connect(self.error)
+            self.measureThread.start()
         except AttributeError:
-            self.popupWarning.showWindow('No sample name given!')              
+            self.popupWarning.showWindow('No sample name given!')
 
-    #----------------------------------------------------------------------
     def done(self):
+        """Update display when finished measurement."""
         self.statusbar.showMessage('Measurement(s) complete.')
         self.dislpayMeasurement()
         self.buttonWidget.showButtons()
-        
-    #----------------------------------------------------------------------
+
     def error(self, message):
+        """Raise error warning."""
         self.popupWarning.showWindow(str(message))
         self.statusbar.showMessage('Measurement error!')
-        self.buttonWidget.hideButtons() 
-    
-    
-    #----------------------------------------------------------------------
+        self.buttonWidget.hideButtons()
+
     def dislpayMeasurement(self):
-                try:
-                    if self.params['Measurement'] == 'iv-sweep':
-                        df = pd.read_csv(str(self.params['Sample name'] + '-' + self.params['Measurement'] + '.csv'), '\t')
-                        self.mainWidget.drawIV(df)
-                    if self.params['Measurement'] == 'output':
-                        df = pd.read_csv(str(self.params['Sample name'] + '-' + self.params['Measurement'] + '.csv'), '\t')
-                        self.mainWidget.drawOutput(df)	
-                    if self.params['Measurement'] == 'transfer':
-                        df = pd.read_csv(str(self.params['Sample name'] + '-' + self.params['Measurement'] + '.csv'), '\t')
-                        self.mainWidget.drawTransfer(df)
-                    elif self.params['Measurement'] == 'all':
-                        self.mainWidget.drawAll(str(self.params['Sample name']))                  
-                except:
-                    self.popupWarning.showWindow('Problem loading data!')
-      	
-
-
-
-########################################################################
-class measureThread(QThread):
-    """ Thread for running measurements """
-    
-    finishedSig = pyqtSignal()
-    errorSig = pyqtSignal(str)
-    
-
-    #----------------------------------------------------------------------
-    def __init__(self, params):
-        ''' Constructor '''
-        QThread.__init__(self)
-        self.params = params
-    
-    #----------------------------------------------------------------------
-    def __del__(self):
-        self.wait()
-    
-    #----------------------------------------------------------------------
-    def run(self):
-        ''' Logic to be run in background thread '''
-        
+        """Display the data on screen."""
         try:
             if self.params['Measurement'] == 'iv-sweep':
-                try:
-                    keithley = k2636.K2636()
-                    keithley.IVsweep(self.params['Sample name'])
-                    keithley.closeConnection()
-                    self.finishedSig.emit()
-                except ConnectionError:
-                    self.errorSig.emit('Please check keithely connection')
-                    self.quit()
-            
+                df = pd.read_csv(str(self.params['Sample name'] + '-' +
+                                 self.params['Measurement'] + '.csv'), '\t')
+                self.mainWidget.drawIV(df)
             if self.params['Measurement'] == 'output':
-                try:
-                    keithley = k2636.K2636()
-                    keithley.Output(self.params['Sample name'])
-                    keithley.closeConnection()
-                    self.finishedSig.emit()
-                except ConnectionError:
-                    self.errorSig.emit('Please check keithely connection')                
-                    self.quit()
-                    
+                df = pd.read_csv(str(self.params['Sample name'] + '-' +
+                                 self.params['Measurement'] + '.csv'), '\t')
+                self.mainWidget.drawOutput(df)
             if self.params['Measurement'] == 'transfer':
-                try:
-                    keithley = k2636.K2636()
-                    keithley.Transfer(self.params['Sample name'])
-                    keithley.closeConnection()
-                    self.finishedSig.emit()
-                except ConnectionError:
-                    self.errorSig.emit('Please check keithely connection')
-                    self.quit()
-                    
+                df = pd.read_csv(str(self.params['Sample name'] + '-neg-pos-' +
+                                 self.params['Measurement'] + '.csv'), '\t')
+                self.mainWidget.drawTransfer(df)
+            elif self.params['Measurement'] == 'all':
+                self.mainWidget.drawAll(str(self.params['Sample name']))
+        except FileNotFoundError:
+            self.popupWarning.showWindow('Could not find data!')
+
+
+class measureThread(QThread):
+    """Thread for running measurements."""
+
+    finishedSig = pyqtSignal()
+    errorSig = pyqtSignal(str)
+
+    def __init__(self, params):
+        """Initialise threads."""
+        QThread.__init__(self)
+        self.params = params
+
+    def __del__(self):
+        """When thread is deconstructed wait for porcesses to complete."""
+        self.wait()
+
+    def run(self):
+        """Logic to be run in background thread."""
+        try:
+            keithley = k2636.K2636()
+
+            if self.params['Measurement'] == 'iv-sweep':
+                keithley.IVsweep(self.params['Sample name'])
+
+            if self.params['Measurement'] == 'output':
+                keithley.Output(self.params['Sample name'])
+
+            if self.params['Measurement'] == 'transfer':
+                keithley.Transfer(self.params['Sample name'])
+
             if self.params['Measurement'] == 'all':
-                try:
-                    keithley = k2636.K2636()
-                    keithley.IVsweep(self.params['Sample name'])
-                    keithley.Output(self.params['Sample name'])
-                    keithley.Transfer(self.params['Sample name'])
-                    keithley.closeConnection()
-                    self.finishedSig.emit()
-                except ConnectionError:
-                    self.errorSig.emit('Please check keithely connection')
-                    self.quit()
-            
-        except:
+                keithley.IVsweep(self.params['Sample name'])
+                keithley.Output(self.params['Sample name'])
+                keithley.Transfer(self.params['Sample name'])
+
+            keithley.closeConnection()
+            self.finishedSig.emit()
+
+        except ConnectionError:
             self.errorSig.emit('No measurement made. Please retry.')
             self.quit()
 
-#----------------------------------------------------------------------
-def main(): 
+
+if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainGUI = GUI()
     sys.exit(app.exec_())
-    
-if __name__ == '__main__':
-    main()
