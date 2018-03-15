@@ -33,11 +33,11 @@ class K2636():
             if 'GPIB' in str(address):
                 # Connection via GPIB
                 print('No GPIB support. Please use serial')
-                raise SystemExit
+                raise ConnectionError
 
         except SerialException:
             print("CONNECTION ERROR: Check instrument address.")
-            raise SystemExit
+            raise ConnectionError
 
     def closeConnection(self):
         """Close connection to keithley."""
