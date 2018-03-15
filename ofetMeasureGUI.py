@@ -12,7 +12,8 @@ from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import (QMainWindow, QDockWidget, QWidget, QDesktopWidget,
                              QApplication, QGridLayout, QPushButton, QLabel,
                              QDoubleSpinBox, QAction, qApp, QSizePolicy,
-                             QTextEdit, QFileDialog, QInputDialog, QLineEdit)
+                             QTextEdit, QFileDialog, QInputDialog, QLineEdit,
+                             QMessageBox)
 
 import matplotlib
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -185,6 +186,7 @@ class keithleyButtonWidget(QWidget):
 
             self.inverterBtn = QPushButton('Voltage Inverter')
             grid.addWidget(self.inverterBtn, 2, 1)
+            self.inverterBtn.clicked.connect(self.inverterPopup)
             self.inverterBtn.clicked.connect(self.showSampleNameInput)
 
         def showSampleNameInput(self):
@@ -205,6 +207,13 @@ class keithleyButtonWidget(QWidget):
             else:
                 self.SampleName = None
                 self.cancelSignal.emit()  # doesnt link to anything yet
+
+        def inverterPopup(self):
+            """Popup for inverter setup change."""
+            inverterWarn = QMessageBox()
+            inverterWarn.setText('WARNING: Make sure correcting wiring' +
+                                 ' for this measurement')
+            inverterWarn.exec()
 
         def hideButtons(self):
             """Hide control buttons."""
