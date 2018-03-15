@@ -27,6 +27,7 @@ class GUI(ofetMeasureGUI.mainWindow):
         self.buttonWidget.outputBtn.clicked.connect(self.outputSweep)
         self.buttonWidget.transferBtn.clicked.connect(self.transferSweep)
         self.buttonWidget.allBtn.clicked.connect(self.allMeasurements)
+        self.buttonWidget.inverterBtn.clicked.connect(self.inverter)
 
     def ivSweep(self):
         """Perform IV sweep."""
@@ -90,6 +91,22 @@ class GUI(ofetMeasureGUI.mainWindow):
         except AttributeError:
             self.popupWarning.showWindow('No sample name given!')
 
+    def inverter(self, event):
+        """Perform voltage inverter measurement."""
+        try:
+            if self.buttonWidget.SampleName is None:
+                raise AttributeError
+            self.params['Sample name'] = self.buttonWidget.SampleName
+            self.statusbar.showMessage('Performing inverter measurement...')
+            self.buttonWidget.hideButtons()
+            self.params['Measurement'] = 'inverter'
+            self.measureThread = measureThread(self.params)
+            self.measureThread.finishedSig.connect(self.done)
+            self.measureThread.errorSig.connect(self.error)
+            self.measureThread.start()
+        except AttributeError:
+            self.popupWarning.showWindow('No sample name given!')
+
     def done(self):
         """Update display when finished measurement."""
         self.statusbar.showMessage('Measurement(s) complete.')
@@ -105,20 +122,30 @@ class GUI(ofetMeasureGUI.mainWindow):
     def dislpayMeasurement(self):
         """Display the data on screen."""
         try:
+            # IV sweep display
             if self.params['Measurement'] == 'iv-sweep':
                 df = pd.read_csv(str(self.params['Sample name'] + '-' +
                                  self.params['Measurement'] + '.csv'), '\t')
                 self.mainWidget.drawIV(df)
-            if self.params['Measurement'] == 'output':
+            # OUTPUT sweep display
+            elif self.params['Measurement'] == 'output':
                 df = pd.read_csv(str(self.params['Sample name'] + '-' +
                                  self.params['Measurement'] + '.csv'), '\t')
                 self.mainWidget.drawOutput(df)
-            if self.params['Measurement'] == 'transfer':
+            # TRANSFER sweep display
+            elif self.params['Measurement'] == 'transfer':
                 df = pd.read_csv(str(self.params['Sample name'] + '-neg-pos-' +
                                  self.params['Measurement'] + '.csv'), '\t')
                 self.mainWidget.drawTransfer(df)
+            # ALL sweeps display
             elif self.params['Measurement'] == 'all':
                 self.mainWidget.drawAll(str(self.params['Sample name']))
+            # INVERTER sweep display
+            elif self.params['Measurement'] == 'inverter':
+                df = pd.read_csv(str(self.params['Sample name'] + '-' +
+                                 self.params['Measurement'] + '.csv'), '\t')
+                self.mainWidget.drawInverter(df)
+
         except FileNotFoundError:
             self.popupWarning.showWindow('Could not find data!')
 
@@ -156,6 +183,9 @@ class measureThread(QThread):
                 keithley.IVsweep(self.params['Sample name'])
                 keithley.Output(self.params['Sample name'])
                 keithley.Transfer(self.params['Sample name'])
+
+            if self.params['Measurement'] == 'inverter':
+                keithley.Inverter(self.params['Sample name'])
 
             keithley.closeConnection()
             self.finishedSig.emit()

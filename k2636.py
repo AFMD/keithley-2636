@@ -43,7 +43,6 @@ class K2636():
         """Close connection to keithley."""
         try:
             self.inst.close()
-            print('Connection to instrument closed.')
 
         except(NameError):
             print('Can not close connection as connection was never open!')
@@ -211,6 +210,21 @@ class K2636():
         except(AttributeError):
             print('Cannot perform transfer sweep: no keithley connected.')
 
+    def Inverter(self, sample):
+        """K2636 inverter measurement."""
+        try:
+            begin_time = time.time()
+            self.loadTSP('inverter.tsp')
+            self.runTSP()
+            df = self.readBuffer()
+            output_name = str(sample + '-inverter.csv')
+            df.to_csv(output_name, sep='\t', index=False)
+            finish_time = time.time()
+            print('Inverter measurement complete. Elapsed time %.2f mins.'
+                  % ((finish_time - begin_time) / 60))
+
+        except(AttributeError):
+            print('Cannot perform output sweep: no keithley connected.')
 ########################################################################
 
 

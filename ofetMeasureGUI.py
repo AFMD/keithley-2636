@@ -183,6 +183,10 @@ class keithleyButtonWidget(QWidget):
             grid.addWidget(self.allBtn, 1, 4)
             self.allBtn.clicked.connect(self.showSampleNameInput)
 
+            self.inverterBtn = QPushButton('Voltage Inverter')
+            grid.addWidget(self.inverterBtn, 2, 1)
+            self.inverterBtn.clicked.connect(self.showSampleNameInput)
+
         def showSampleNameInput(self):
             """Popup for sample name input."""
             samNam = QInputDialog()
@@ -316,6 +320,16 @@ class mplWidget(FigureCanvas):
             self.ax4.set_ylabel('Gate Leakage [A]')
 
             self.fig.tight_layout()
+            FigureCanvas.draw(self)
+
+        def drawInverter(self, df):
+            """Take a data frame and draw it."""
+            self.ax1 = self.fig.add_subplot(111)
+            self.ax1.plot(df['Channel Voltage [V]'], df['Channel Current [A]'],
+                          '.')
+            self.ax1.set_title('Inverter')
+            self.ax1.set_xlabel('Channel Voltage [V]')
+            self.ax1.set_ylabel('Channel Current [A]')
             FigureCanvas.draw(self)
 
         def clear(self):
