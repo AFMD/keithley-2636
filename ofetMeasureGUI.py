@@ -41,6 +41,7 @@ class mainWindow(QMainWindow):
         # Add other window widgets
         self.keithleySettingsWindow = keithleySettingsWindow()
         self.keithleyConnectionWindow = keithleyConnectionWindow()
+        self.keithleyErrorWindow = keithleyErrorWindow()
         self.popupWarning = warningWindow()
 
         # Dock setup
@@ -80,6 +81,9 @@ class mainWindow(QMainWindow):
         keithleyConAction.setStatusTip('Reconnect to keithley 2636')
         keithleyAction.triggered.connect(self.keithleySettingsWindow.show)
         keithleyConAction.triggered.connect(self.keithleyConnectionWindow.show)
+        keithleyError = QAction('Error Log', self)
+        keithleyError.setShortcut('Ctrl+E')
+        keithleyError.triggered.connect(self.keithleyErrorWindow.show)
 
         # Add items to menu bars
         menubar = self.menuBar()
@@ -91,6 +95,7 @@ class mainWindow(QMainWindow):
         keithleyMenu = menubar.addMenu('&Keithley')
         keithleyMenu.addAction(keithleyConAction)
         keithleyMenu.addAction(keithleyAction)
+        keithleyMenu.addAction(keithleyError)
 
         # Status bar setup
         self.statusbar = self.statusBar()
@@ -465,6 +470,56 @@ class keithleyConnectionWindow(QWidget):
 
             except ConnectionError:
                 self.connStatus.append('No Keithley can be found.')
+
+
+class keithleyErrorWindow(QWidget):
+        """Popup for reading error messages."""
+
+        def __init__(self):
+            """Initialise setup."""
+            super().__init__()
+            self.initWidget()
+
+        def initWidget(self):
+            """Initialise connections."""
+            # Set widget layout
+            grid = QGridLayout()
+            self.setLayout(grid)
+
+            # Connection status box
+            self.errorStatus = QTextEdit('ERROR CODE------------------MESSAGE')
+            self.errorButton = QPushButton('Read error')
+            self.errorButton.clicked.connect(self.readError)
+            grid.addWidget(self.errorStatus, 1, 1)
+            grid.addWidget(self.errorButton, 2, 1)
+
+            # Window setup
+            self.resize(600, 300)
+            self.centre()
+            self.setWindowTitle('K2636 - Error Log')
+
+        def centre(self):
+            """Find screen size and place in centre."""
+            screen = QDesktopWidget().screenGeometry()
+            size = self.geometry()
+            self.move((screen.width()-size.width()) / 2,
+                      (screen.height()-size.height()) / 2)
+
+        def readError(self):
+            """Reconnect to instrument."""
+            try:
+                self.keithley = k2636.K2636(address='ASRL/dev/ttyUSB0',
+                                            read_term='\n', baudrate=57600)
+
+                self.keithley._write('errorCode, message, severity, errorNode' +
+                                     '= errorqueue.next()')
+                self.keithley._write('print(errorCode, message)')
+                error = self.keithley._query('')
+                self.errorStatus.append(error)
+                self.keithley.closeConnection()
+
+            except ConnectionError:
+                self.connStatus.append('Something has gone wrong.')
 
 
 class warningWindow(QWidget):
