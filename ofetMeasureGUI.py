@@ -507,19 +507,15 @@ class keithleyErrorWindow(QWidget):
 
         def readError(self):
             """Reconnect to instrument."""
-            try:
-                self.keithley = k2636.K2636(address='ASRL/dev/ttyUSB0',
-                                            read_term='\n', baudrate=57600)
+            self.keithley = k2636.K2636(address='ASRL/dev/ttyUSB0',
+                                        read_term='\n', baudrate=57600)
 
-                self.keithley._write('errorCode, message, severity, errorNode' +
-                                     '= errorqueue.next()')
-                self.keithley._write('print(errorCode, message)')
-                error = self.keithley._query('')
-                self.errorStatus.append(error)
-                self.keithley.closeConnection()
-
-            except ConnectionError:
-                self.connStatus.append('Something has gone wrong.')
+            self.keithley._write('errorCode, message, severity, errorNode' +
+                                 '= errorqueue.next()')
+            self.keithley._write('print(errorCode, message)')
+            error = self.keithley._query('')
+            self.errorStatus.append(error)
+            self.keithley.closeConnection()
 
 
 class warningWindow(QWidget):
