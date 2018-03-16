@@ -211,7 +211,7 @@ class keithleyButtonWidget(QWidget):
         def inverterPopup(self):
             """Popup for inverter setup change."""
             inverterWarn = QMessageBox()
-            inverterWarn.setText('WARNING: Make sure correcting wiring' +
+            inverterWarn.setText('WARNING: Make sure correct wiring' +
                                  ' for this measurement')
             inverterWarn.exec()
 
