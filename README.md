@@ -6,7 +6,7 @@ The K2636.py script in this folder loads a set of .tsp instructions into the mem
 
 # Example python script:
 
->keithley = K2636(address='ASRL/dev/ttyUSB0', read_term='\n', baudrate=57600)	
+>keithley = K2636(address='ASRL/dev/ttyUSB0', read_term='\n', baudrate=57600)
 
 >sample = 'ofet1'
 
@@ -19,6 +19,12 @@ The K2636.py script in this folder loads a set of .tsp instructions into the mem
 >keithley.DisplayMeasurement(sample)
 
 >keithley.closeConnection()
+
+
+# User interface
+There is also a user interface. To start the GUI run:
+
+> python ofetMeasureGUI.py
 
 
 # requires:
