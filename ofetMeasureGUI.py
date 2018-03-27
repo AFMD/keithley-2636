@@ -346,6 +346,7 @@ class mplWidget(FigureCanvas):
             self.ax1.set_title('Inverter')
             self.ax1.set_xlabel('Voltage In [V]')
             self.ax1.set_ylabel('Voltage Out [V]')
+            self.fig.tight_layout()
             FigureCanvas.draw(self)
 
         def clear(self):

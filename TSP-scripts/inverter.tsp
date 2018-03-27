@@ -1,22 +1,25 @@
--- PARAMETERS TO CHANGE
+----------------
+-- TSP PROGRAM FOR PERFORMING INVERTER MEASUREMENT
+-- Sweeps over an input voltgae range and measures an output voltage
 
+
+-------- PARAMETERS --------
 VinStart = -1
 VinEnd = 1
 VinStep = 0.1
 
 
--- MAIN PROGRAM
+-------- MAIN PROGRAM --------
 reset()
 display.clear()
 
 -- Beep in excitement
 beeper.beep(1, 600)
 
-
--- INVERTER MEASUREMENT
--- Clear buffers and make sure the right thing is recorded
+-- Clear buffers
 smua.nvbuffer1.clear()
 smub.nvbuffer1.clear()
+-- Prepare buffers
 smua.nvbuffer1.collectsourcevalues = 1
 smub.nvbuffer1.collectsourcevalues = 1
 format.data = format.ASCII
@@ -25,32 +28,30 @@ smub.nvbuffer1.appendmode = 1
 smua.measure.count = 1
 smub.measure.count = 1
 
-
--- Measurement Setup
--- To adjust the delay factor.
+-- SMUA setup
 smua.measure.delayfactor = 1.0
 smua.measure.nplc = 10
--- SMUA setup
 smua.source.func = smua.OUTPUT_DCVOLTS
 smua.source.autorangev = smua.AUTORANGE_ON
 -- Compliance here relates to gate leakage
 smua.source.limiti = 1e-8
+
 -- SMUB setup
+smub.measure.nplc = 10
 smub.sense = smub.SENSE_LOCAL
 smub.measure.autorangev = smub.AUTORANGE_ON
 smub.source.limiti = 1e-6
-smub.measure.nplc = 10
 
---DISPLAY smua and smub
+--DISPLAY settings
 display.smua.measure.func = display.MEASURE_DCAMPS
 display.smub.measure.func = display.MEASURE_DCVOLTS
-display.screen = 1
+display.screen = display.SMUA_SMUB
 
--- Measurement
+-- MEASUREMENT ROUTINE
 V = VinStart
-smua.source.output = smua.OUTPUT_ON
 smua.source.levelv = V
-delay(0.5)
+smua.source.output = smua.OUTPUT_ON
+delay(1)
 
 while V <= VinEnd do
         smua.source.levelv = V
@@ -63,3 +64,4 @@ while V <= VinEnd do
 end
 
 waitcomplete()
+-------- END --------

@@ -1,14 +1,25 @@
+----------------
+-- TSP PROGRAM FOR PERFORMING IV SWEEP
+-- Sweeps over an input voltgae range and measures an output current
+
+
+-------- PARAMETERS --------
+Vstart = -1
+Vend = 1
+Vstep = 0.1
+
+
+-------- MAIN PROGRAM --------
 reset()
 display.clear()
 
 -- Beep in excitement
 beeper.beep(1, 600)
 
-
--- TRANSFER CHARACTERISTICS
--- Clear buffers and make sure the right thing is recorded
+-- Clear buffers
 smua.nvbuffer1.clear()
 smub.nvbuffer1.clear()
+-- Prepare buffers
 smua.nvbuffer1.collectsourcevalues = 1
 smub.nvbuffer1.collectsourcevalues = 1
 format.data = format.ASCII
@@ -17,39 +28,35 @@ smub.nvbuffer1.appendmode = 1
 smua.measure.count = 1
 smub.measure.count = 1
 
-
 -- Measurement Setup
 -- To adjust the delay factor.
-smua.measure.delayfactor = 1.0
--- Set Vd
-smua.source.levelv = 0.0
---Channel 2 (sweep Vg)
-smub.source.func = smub.OUTPUT_DCVOLTS
-smub.source.levelv = 0.0
--- Channel 1 (source Vd, meas Id)
+smua.measure.delayfactor = 1
+smua.measure.nplc = 10
+-- SMUA setup
 smua.source.func = smua.OUTPUT_DCVOLTS
 smua.sense = smua.SENSE_LOCAL
 smua.source.autorangev = smua.AUTORANGE_ON
--- Set complaince to 1uA
 smua.source.limiti = 1e-5
 smua.measure.rangei = 1e-5
-smub.source.limiti = 1e-6
-smua.measure.nplc = 10
 
--- Measurement
+--DISPLAY settings
 display.smua.measure.func = display.MEASURE_DCAMPS
 display.screen = display.SMUA
 
+-- Measurement routine
+V = VinStart
 smua.source.output = smua.OUTPUT_ON
-smua.source.levelv = -5
-delay(5)
+smua.source.levelv = V
+--delay(1)
 
-for Vd = -5, 5 do
-        smua.source.levelv = Vd * (0.1)
-        smua.measure.i(smua.nvbuffer1)
-        smub.measure.v(smub.nvbuffer1)
+while V <= Vend do
+        smua.source.levelv = V
+        smua.source.output = smua.OUTPUT_ON
         delay(0.2)
+        smua.measure.i(smua.nvbuffer1)
+        V = V + Vstep
+        smua.source.output = smua.OUTPUT_OFF
 end
 
-smua.source.output = smua.OUTPUT_OFF
-smub.source.output = smub.OUTPUT_OFF
+waitcomplete()
+-------- END --------
