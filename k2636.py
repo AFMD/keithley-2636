@@ -62,8 +62,11 @@ class K2636():
 
     def _query(self, s):
         """Query instrument."""
-        r = self.inst.query(s)
-        return r
+        try:
+            r = self.inst.query(s)
+            return r
+        except SerialException:
+            return 'Serial port busy, try again.'
 
     def loadTSP(self, tsp):
         """Load an anonymous TSP script into the K2636 nonvolatile memory."""
@@ -89,18 +92,25 @@ class K2636():
 
     def readBuffer(self):
         """Read buffer in memory and return an array."""
-        vg = [float(x) for x in self._query('printbuffer' +
-              '(1, smub.nvbuffer1.n, smub.nvbuffer1.sourcevalues)').split(',')]
-        ig = [float(x) for x in self._query('printbuffer' +
-              '(1, smub.nvbuffer1.n, smub.nvbuffer1.readings)').split(',')]
-        vd = [float(x) for x in self._query('printbuffer' +
-              '(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)').split(',')]
-        c = [float(x) for x in self._query('printbuffer' +
-             '(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
+        try:
+            vg = [float(x) for x in self._query('printbuffer' +
+                  '(1, smub.nvbuffer1.n, smub.nvbuffer1.sourcevalues)').split(',')]
+            ig = [float(x) for x in self._query('printbuffer' +
+                  '(1, smub.nvbuffer1.n, smub.nvbuffer1.readings)').split(',')]
+            vd = [float(x) for x in self._query('printbuffer' +
+                  '(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)').split(',')]
+            c = [float(x) for x in self._query('printbuffer' +
+                 '(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
 
-        df = pd.DataFrame({'Gate Voltage [V]': vg, 'Channel Voltage [V]': vd,
-                          'Channel Current [A]': c, 'Gate Leakage [A]': ig})
-        return df
+            df = pd.DataFrame({'Gate Voltage [V]': vg,
+                               'Channel Voltage [V]': vd,
+                               'Channel Current [A]': c,
+                               'Gate Leakage [A]': ig})
+            return df
+
+        except SerialException:
+            print('Cannot read buffer.')
+            return
 
     def readBufferIV(self):
         """Read specified buffer in keithley memory and return an array."""

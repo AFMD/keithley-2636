@@ -24,7 +24,7 @@ The K2636.py script in this folder loads a set of .tsp instructions into the mem
 # User interface
 There is also a user interface. To start the GUI run:
 
-> python ofetMeasureGUI.py
+>python ofetMeasure.py
 
 
 # requires:
