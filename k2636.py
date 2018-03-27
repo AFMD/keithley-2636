@@ -67,6 +67,8 @@ class K2636():
             return r
         except SerialException:
             return 'Serial port busy, try again.'
+        except FileNotFoundError:
+            return 'CONNECTTION ERROR: Check instrument address.'
 
     def loadTSP(self, tsp):
         """Load an anonymous TSP script into the K2636 nonvolatile memory."""
@@ -120,6 +122,17 @@ class K2636():
              '(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
         df = pd.DataFrame({'Channel Voltage [V]': vd, 'Channel Current [A]': c})
         return df
+    
+    def readBufferInverter(self):
+        """Read specified buffer for inverter measurement."""
+        vin = [float(x) for x in self._query('printbuffer' +
+              '(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)').split(',')]
+        leak = [float(x) for x in self._query('printbuffer' +
+             '(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
+        vout = [float(x) for x in self._query('printbuffer' +
+             '(1, smub.nvbuffer1.n, smub.nvbuffer1.readings)').split(',')]
+        df = pd.DataFrame({'Voltage In [V]': vin, 'Voltage Out [V]': vout, 'Leakage Current [A]': leak})
+        return df    
 
     def DisplayMeasurement(self, sample):
         """Show graphs of measurements."""
@@ -226,7 +239,7 @@ class K2636():
             begin_time = time.time()
             self.loadTSP('inverter.tsp')
             self.runTSP()
-            df = self.readBuffer()
+            df = self.readBufferInverter()
             output_name = str(sample + '-inverter.csv')
             df.to_csv(output_name, sep='\t', index=False)
             finish_time = time.time()

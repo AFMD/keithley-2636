@@ -1,3 +1,11 @@
+-- PARAMETERS TO CHANGE
+
+VinStart = -1
+VinEnd = 1
+VinStep = 0.1
+
+
+-- MAIN PROGRAM
 reset()
 display.clear()
 
@@ -5,7 +13,7 @@ display.clear()
 beeper.beep(1, 600)
 
 
--- TRANSFER CHARACTERISTICS
+-- INVERTER MEASUREMENT
 -- Clear buffers and make sure the right thing is recorded
 smua.nvbuffer1.clear()
 smub.nvbuffer1.clear()
@@ -21,35 +29,37 @@ smub.measure.count = 1
 -- Measurement Setup
 -- To adjust the delay factor.
 smua.measure.delayfactor = 1.0
--- Set Vd
-smua.source.levelv = 0.0
---Channel 2 (sweep Vg)
-smub.source.func = smub.OUTPUT_DCVOLTS
-smub.source.levelv = 0.0
--- Channel 1 (source Vd, meas Id)
-smua.source.func = smua.OUTPUT_DCVOLTS
-smua.sense = smua.SENSE_LOCAL
-smua.source.autorangev = smua.AUTORANGE_ON
--- Set complaince to 1uA
-smua.source.limiti = 1e-5
-smua.measure.rangei = 1e-5
-smub.source.limiti = 1e-6
 smua.measure.nplc = 10
+-- SMUA setup
+smua.source.func = smua.OUTPUT_DCVOLTS
+smua.source.autorangev = smua.AUTORANGE_ON
+-- Compliance here relates to gate leakage
+smua.source.limiti = 1e-8
+-- SMUB setup
+smub.sense = smub.SENSE_LOCAL
+smub.measure.autorangev = smub.AUTORANGE_ON
+smub.source.limiti = 1e-6
+smub.measure.nplc = 10
+
+--DISPLAY smua and smub
+display.smua.measure.func = display.MEASURE_DCAMPS
+display.smub.measure.func = display.MEASURE_DCVOLTS
+display.screen = 1
 
 -- Measurement
-display.smua.measure.func = display.MEASURE_DCAMPS
-display.screen = display.SMUA
+V = VinStart
+smua.source.output = smua.OUTPUT_ON
+smua.source.levelv = V
+delay(0.5)
 
-smua.source.output = smub.OUTPUT_ON
---smua.source.levelv = -50
---delay(5)
-
-for Vd = -100, 100 do
-        smua.source.levelv = Vd * 0.01
+while V <= VinEnd do
+        smua.source.levelv = V
+        smua.source.output = smua.OUTPUT_ON
+        delay(0.2)
         smua.measure.i(smua.nvbuffer1)
         smub.measure.v(smub.nvbuffer1)
-        delay(0.2)
+        V = V + VinStep
+        smua.source.output = smua.OUTPUT_OFF
 end
 
-smua.source.output = smua.OUTPUT_OFF
-smub.source.output = smub.OUTPUT_OFF
+waitcomplete()

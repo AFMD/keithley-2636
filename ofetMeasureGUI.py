@@ -226,6 +226,7 @@ class keithleyButtonWidget(QWidget):
             self.outputBtn.setEnabled(False)
             self.transferBtn.setEnabled(False)
             self.allBtn.setEnabled(False)
+            self.inverterBtn.setEnabled(False)
 
         def showButtons(self):
             """Show control buttons."""
@@ -233,6 +234,7 @@ class keithleyButtonWidget(QWidget):
             self.outputBtn.setEnabled(True)
             self.transferBtn.setEnabled(True)
             self.allBtn.setEnabled(True)
+            self.inverterBtn.setEnabled(True)
 
 
 class mplWidget(FigureCanvas):
@@ -339,11 +341,11 @@ class mplWidget(FigureCanvas):
         def drawInverter(self, df):
             """Take a data frame and draw it."""
             self.ax1 = self.fig.add_subplot(111)
-            self.ax1.plot(df['Channel Voltage [V]'], df['Channel Current [A]'],
+            self.ax1.plot(df['Voltage In [V]'], df['Voltage Out [V]'],
                           '.')
             self.ax1.set_title('Inverter')
-            self.ax1.set_xlabel('Channel Voltage [V]')
-            self.ax1.set_ylabel('Channel Current [A]')
+            self.ax1.set_xlabel('Voltage In [V]')
+            self.ax1.set_ylabel('Voltage Out [V]')
             FigureCanvas.draw(self)
 
         def clear(self):
