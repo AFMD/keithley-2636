@@ -1,6 +1,8 @@
 ----------------
 -- TSP PROGRAM FOR PERFORMING IV SWEEP
--- Sweeps over an input voltgae range and measures an output current
+-- Sweeps over an input voltgae range and measures an output current.
+
+-- INPUT sweep start, sweep end, and absolute step size.
 
 
 -------- PARAMETERS --------
@@ -44,18 +46,35 @@ display.smua.measure.func = display.MEASURE_DCAMPS
 display.screen = display.SMUA
 
 -- Measurement routine
-V = VinStart
+V = Vstart
 smua.source.output = smua.OUTPUT_ON
 smua.source.levelv = V
---delay(1)
+delay(1)
 
-while V <= Vend do
-        smua.source.levelv = V
-        smua.source.output = smua.OUTPUT_ON
-        delay(0.2)
-        smua.measure.i(smua.nvbuffer1)
-        V = V + Vstep
-        smua.source.output = smua.OUTPUT_OFF
+-- forwards scan direction
+if Vstart < Vend then
+    while V <= Vend do
+            smua.source.levelv = V
+            smua.source.output = smua.OUTPUT_ON
+            delay(0.2)
+            smua.measure.i(smua.nvbuffer1)
+            V = V + Vstep
+            smua.source.output = smua.OUTPUT_OFF
+    end
+
+-- reverse scan direction
+elseif Vstart > Vend then
+    while V >= Vend do
+            smua.source.levelv = V
+            smua.source.output = smua.OUTPUT_ON
+            delay(0.2)
+            smua.measure.i(smua.nvbuffer1)
+            V = V - Vstep
+            smua.source.output = smua.OUTPUT_OFF
+    end
+
+else
+    error("Invalid sweep parameters.")
 end
 
 waitcomplete()
