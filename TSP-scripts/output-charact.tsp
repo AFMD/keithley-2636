@@ -2,14 +2,16 @@
 -- TSP PROGRAM FOR PERFORMING OFET OUTPUT MEASUREMENTS
 -- Sweeps over channel and gate input voltages and measures channel current
 
+-- INPUT sweep start and end points with ABSOLUTE step size
+
 
 -------- PARAMETERS --------
 VdStart = 0
-VdEnd = 2
-VdStep = 0.1
+VdEnd = 10
+VdStep = 1
 
 VgStart = 0
-VgEnd = 2
+VgEnd = 10
 VgStep = 1
 
 -------- MAIN PROGRAM --------
@@ -53,34 +55,94 @@ display.screen = display.SMUA_SMUB
 
 -- MEASUREMENT ROUTINE
 Vg = VgStart
-smub.source.levelv = Vg
-smub.source.output = smub.OUTPUT_ON
-delay(1)
 
-while Vg <= VgEnd do
-    smub.source.levelv = Vg
-    smub.source.output = smub.OUTPUT_ON
-    delay(1)
-    
-    Vd = VdStart
-    smua.source.levelv = Vd
-    smua.source.output = smua.OUTPUT_ON
-    delay(1)
-    
-    while Vd <= VdEnd do
+-- forwards Vg scan
+if VgStart < VgEnd then
+    while Vg <= VgEnd do
+        smub.source.levelv = Vg
+        smub.source.output = smub.OUTPUT_ON
+        delay(0.2)
+
+        Vd = VdStart
         smua.source.levelv = Vd
         smua.source.output = smua.OUTPUT_ON
-        delay(0.4)
-        smua.measure.i(smua.nvbuffer1)
-        smub.measure.i(smub.nvbuffer1)
-        Vd = Vd + VdStep
-        smua.source.output = smua.OUTPUT_OFF
-    end
-    
-    smub.source.output = smub.OUTPUT_OFF
-    Vg = Vg + VgStep
-    
-end
+        delay(0.2)
 
+        -- forward Vd scan
+        if VdStart < VdEnd then
+            while Vd <= VdEnd do
+                smua.source.levelv = Vd
+                smua.source.output = smua.OUTPUT_ON
+                delay(0.2)
+                smua.measure.i(smua.nvbuffer1)
+                smub.measure.i(smub.nvbuffer1)
+                Vd = Vd + VdStep
+                smua.source.output = smua.OUTPUT_OFF
+            end
+        -- reverse Vd scan
+        elseif VdStart > VdEnd then
+            while Vd >= VdEnd do
+                smua.source.levelv = Vd
+                smua.source.output = smua.OUTPUT_ON
+                delay(0.2)
+                smua.measure.i(smua.nvbuffer1)
+                smub.measure.i(smub.nvbuffer1)
+                Vd = Vd - VdStep
+                smua.source.output = smua.OUTPUT_OFF
+            end
+        else
+            error("Invalid sweep parameters.")
+        end
+
+        smub.source.output = smub.OUTPUT_OFF
+        Vg = Vg + VgStep
+
+    end
+
+-- Reverse Vg scan
+elseif VgStart > VgEnd then
+    while Vg >= VgEnd do
+        smub.source.levelv = Vg
+        smub.source.output = smub.OUTPUT_ON
+        delay(0.2)
+
+        Vd = VdStart
+        smua.source.levelv = Vd
+        smua.source.output = smua.OUTPUT_ON
+        delay(0.2)
+
+        -- forward Vd scan
+        if VdStart < VdEnd then
+            while Vd <= VdEnd do
+                smua.source.levelv = Vd
+                smua.source.output = smua.OUTPUT_ON
+                delay(0.2)
+                smua.measure.i(smua.nvbuffer1)
+                smub.measure.i(smub.nvbuffer1)
+                Vd = Vd + VdStep
+                smua.source.output = smua.OUTPUT_OFF
+            end
+        -- reverse Vd scan
+        elseif VdStart > VdEnd then
+            while Vd >= VdEnd do
+                smua.source.levelv = Vd
+                smua.source.output = smua.OUTPUT_ON
+                delay(0.2)
+                smua.measure.i(smua.nvbuffer1)
+                smub.measure.i(smub.nvbuffer1)
+                Vd = Vd - VdStep
+                smua.source.output = smua.OUTPUT_OFF
+            end
+        else
+            error("Invalid sweep parameters.")
+        end
+
+        smub.source.output = smub.OUTPUT_OFF
+        Vg = Vg - VgStep
+
+    end
+else
+    error ("Invalid sweep parameters.")
+end
 waitcomplete()
 -------- END --------
