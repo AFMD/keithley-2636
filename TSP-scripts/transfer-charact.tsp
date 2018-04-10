@@ -92,5 +92,7 @@ else
     error("Invalid sweep parameters.")
 end
 
+smua.source.output = smua.OUTPUT_OFF
+smub.source.output = smub.OUTPUT_OFF
 waitcomplete()
 -------- END --------
