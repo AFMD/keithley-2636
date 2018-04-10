@@ -33,11 +33,9 @@ class K2636():
             if 'GPIB' in str(address):
                 # Connection via GPIB
                 print('No GPIB support. Please use serial')
-                raise ConnectionError
 
         except SerialException:
             print("CONNECTION ERROR: Check instrument address.")
-            raise ConnectionError
 
     def closeConnection(self):
         """Close connection to keithley."""
@@ -45,15 +43,18 @@ class K2636():
             self.inst.close()
 
         except(NameError):
-            print('Can not close connection as connection was never open!')
+            print('CONNECTION ERROR: No connection established.')
 
         except(AttributeError):
-            print('Can not close connection as connection was never open!')
+            print('CONNECTION ERROR: No connection established.')
 
     def _write(self, m):
         """Write to instrument."""
-        assert type(m) == str
-        self.inst.write(m)
+        try:
+            assert type(m) == str
+            self.inst.write(m)
+        except AttributeError:
+            print('CONNECTION ERROR: No connection established.')
 
     def _read(self):
         """Read instrument."""
@@ -66,9 +67,12 @@ class K2636():
             r = self.inst.query(s)
             return r
         except SerialException:
-            return 'Serial port busy, try again.'
+            return ('Serial port busy, try again.')
         except FileNotFoundError:
-            return 'CONNECTTION ERROR: Check instrument address.'
+            return ('CONNECTION ERROR: No connection established.')
+        except AttributeError:
+            print('CONNECTION ERROR: No connection established.')
+            return ('CONNECTION ERROR: No connection established.')
 
     def loadTSP(self, tsp):
         """Load an anonymous TSP script into the K2636 nonvolatile memory."""
@@ -125,13 +129,15 @@ class K2636():
     
     def readBufferInverter(self):
         """Read specified buffer for inverter measurement."""
-        vin = [float(x) for x in self._query('printbuffer' +
+        SMUAsrc = [float(x) for x in self._query('printbuffer' +
               '(1, smua.nvbuffer1.n, smua.nvbuffer1.sourcevalues)').split(',')]
-        leak = [float(x) for x in self._query('printbuffer' +
+        SMUAread = [float(x) for x in self._query('printbuffer' +
              '(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
-        vout = [float(x) for x in self._query('printbuffer' +
-             '(1, smub.nvbuffer1.n, smub.nvbuffer1.readings)').split(',')]
-        df = pd.DataFrame({'Voltage In [V]': vin, 'Voltage Out [V]': vout, 'Leakage Current [A]': leak})
+        SMUBsrc = [float(x) for x in self._query('printbuffer' +
+             '(1, smub.nvbuffer1.n, smub.nvbuffer1.sourcevalues)').split(',')]
+        SMUBread = [float(x) for x in self._query('printbuffer' +
+             '(1, smub.nvbuffer1.n, smub.nvbuffer1.readings)').split(',')]        
+        df = pd.DataFrame({'Voltage In [V]': SMUAread, 'Voltage Out [V]': SMUBread, 'SMUA source': SMUAsrc, 'SMUB source': SMUBsrc})
         return df    
 
     def DisplayMeasurement(self, sample):
@@ -240,8 +246,16 @@ class K2636():
             self.loadTSP('inverter.tsp')
             self.runTSP()
             df = self.readBufferInverter()
-            output_name = str(sample + '-inverter.csv')
+            output_name = str(sample + '-neg-pos-inverter.csv')
             df.to_csv(output_name, sep='\t', index=False)
+            
+            # inverter reverse scan
+            self.loadTSP('inverter-reverse.tsp')
+            self.runTSP()
+            df = self.readBufferInverter()
+            output_name = str(sample + '-pos-neg-inverter.csv')
+            df.to_csv(output_name, sep='\t', index=False)            
+            
             finish_time = time.time()
             print('Inverter measurement complete. Elapsed time %.2f mins.'
                   % ((finish_time - begin_time) / 60))

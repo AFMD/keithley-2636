@@ -6,7 +6,7 @@
 -------- PARAMETERS --------
 VinStart = -40
 VinEnd = 40
-VinStep = 3
+VinStep = -3
 
 DIR = 1
 

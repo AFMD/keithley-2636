@@ -145,6 +145,8 @@ class mainWindow(QMainWindow):
                                     self.mainWidget.drawTransfer(df)
                             elif fnmatch.fnmatch(fname[0], '*gate-leakage.csv'):
                                     self.mainWidget.drawLeakage(df)
+                            elif fnmatch.fnmatch(fname[0], '*inverter.csv'):
+                                    self.mainWidget.drawInverter(df)                                    
                             else:
                                 raise FileNotFoundError
                     except KeyError or FileNotFoundError:
@@ -388,12 +390,17 @@ class keithleySettingsWindow(QWidget):
             # IV Settings
             ivFirstV = QDoubleSpinBox(self)
             grid.addWidget(ivFirstV, 2, 2)
+            ivFirstV.setMinimum(-100)
+            ivFirstV.setValue(-5)
             ivLastV = QDoubleSpinBox(self)
             grid.addWidget(ivLastV, 2, 3)
+            ivLastV.setValue(5)
             ivStepV = QDoubleSpinBox(self)
             grid.addWidget(ivStepV, 2, 4)
+            ivStepV.setValue(0.1)
             ivStepT = QDoubleSpinBox(self)
             grid.addWidget(ivStepT, 2, 5)
+            ivStepT.setValue(0.2)
 
             # Ouptut curve Settings
             outputFirstV = QDoubleSpinBox(self)
@@ -414,7 +421,17 @@ class keithleySettingsWindow(QWidget):
             grid.addWidget(transferStepV, 4, 4)
             transferStepT = QDoubleSpinBox(self)
             grid.addWidget(transferStepT, 4, 5)
-
+            
+            # OK button
+            setSettings = QPushButton('Ok')
+            grid.addWidget(setSettings, 5, 4)
+            setSettings.clicked.connect(self.setIVparams)
+            
+            # Cancel button
+            cancelSet = QPushButton('Cancel')
+            grid.addWidget(cancelSet, 5, 5)
+            cancelSet.clicked.connect(self.close)
+            
             # Window setup
             self.centre()
             self.setWindowTitle('K2636 - Settings')
@@ -426,6 +443,9 @@ class keithleySettingsWindow(QWidget):
             self.move((screen.width()-size.width())/2,
                       (screen.height()-size.height())/2)
 
+        def setIVparams(self):
+            """Store IV sweep settings in .tsp file."""
+            print('You are here')
 
 class keithleyConnectionWindow(QWidget):
         """Popup for connecting to instrument."""
