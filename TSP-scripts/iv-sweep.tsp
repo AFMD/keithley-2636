@@ -6,9 +6,9 @@
 
 
 -------- PARAMETERS --------
-Vstart = -1
-Vend = 1
-Vstep = 0.1
+Vstart = -0.5
+Vend = 0.5
+Vstep = 0.01
 
 
 -------- MAIN PROGRAM --------

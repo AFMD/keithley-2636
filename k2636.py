@@ -36,6 +36,7 @@ class K2636():
 
         except SerialException:
             print("CONNECTION ERROR: Check instrument address.")
+            raise ConnectionError
 
     def closeConnection(self):
         """Close connection to keithley."""

@@ -4,9 +4,9 @@
 
 
 -------- PARAMETERS --------
-VinStart = -40
-VinEnd = 40
-VinStep = -3
+VinStart = -120
+VinEnd = 0
+VinStep = -1
 
 DIR = 1
 

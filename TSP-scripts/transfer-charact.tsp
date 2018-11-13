@@ -6,11 +6,11 @@
 
 
 -------- PARAMETERS --------
-Vchan = -1
+Vchan = -50
 
-VgStart = -0.5
-VgEnd = 0.5
-VgStep = 0.1
+VgStart = -100
+VgEnd = 100
+VgStep = 1
 
 
 -------- MAIN PROGRAM --------
@@ -38,8 +38,8 @@ smua.measure.nplc = 10
 smua.source.func = smua.OUTPUT_DCVOLTS
 smua.sense = smua.SENSE_LOCAL
 smua.source.autorangev = smua.AUTORANGE_ON
-smua.source.limiti = 10e-6
-smua.measure.rangei = 10e-6
+smua.source.limiti = 10e-5
+smua.measure.rangei = 10e-5
 
 -- SMUB setup
 smub.measure.delayfactor = 1.0

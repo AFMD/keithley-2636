@@ -67,6 +67,12 @@ class mainWindow(QMainWindow):
         loadAction.setShortcut('Ctrl+L')
         loadAction.setStatusTip('Load data to be displayed')
         loadAction.triggered.connect(self.showFileOpen)
+        # Load old ALL data
+        loadALLAction = QAction('&Load ALL', self)
+        loadALLAction.setShortcut('Ctrl+A')
+        loadALLAction.setStatusTip(
+            'Load iv, output and transfer data to be displayed')
+        loadALLAction.triggered.connect(self.showFileOpenALL)
         # Clear data
         clearAction = QAction('Clear', self)
         clearAction.setShortcut('Ctrl+C')
@@ -89,6 +95,7 @@ class mainWindow(QMainWindow):
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(loadAction)
+        fileMenu.addAction(loadALLAction)
         fileMenu.addAction(clearAction)
         fileMenu.addSeparator()
         fileMenu.addAction(exitAction)
@@ -135,24 +142,47 @@ class mainWindow(QMainWindow):
             filt1 = '*.csv'
             fname = QFileDialog.getOpenFileName(self, 'Open file', filter=filt1)
             if fname[0]:
-                    try:
-                            df = pd.read_csv(fname[0], '\t')
-                            if fnmatch.fnmatch(fname[0], '*iv-sweep.csv'):
-                                    self.mainWidget.drawIV(df)
-                            elif fnmatch.fnmatch(fname[0], '*output.csv'):
-                                    self.mainWidget.drawOutput(df)
-                            elif fnmatch.fnmatch(fname[0], '*transfer.csv'):
-                                    self.mainWidget.drawTransfer(df)
-                            elif fnmatch.fnmatch(fname[0], '*gate-leakage.csv'):
-                                    self.mainWidget.drawLeakage(df)
-                            elif fnmatch.fnmatch(fname[0], '*inverter.csv'):
-                                    self.mainWidget.drawInverter(df)                                    
-                            else:
-                                raise FileNotFoundError
-                    except KeyError or FileNotFoundError:
-                            self.popupWarning.showWindow('Unsupported file.')
+                try:
+                    df = pd.read_csv(fname[0], '\t')
+                    if fnmatch.fnmatch(fname[0], '*iv-sweep.csv'):
+                        self.mainWidget.drawIV(df)
+                    elif fnmatch.fnmatch(fname[0], '*output.csv'):
+                        self.mainWidget.drawOutput(df)
+                    elif fnmatch.fnmatch(fname[0], '*transfer.csv'):
+                        self.mainWidget.drawTransfer(df)
+                    elif fnmatch.fnmatch(fname[0], '*gate-leakage.csv'):
+                        self.mainWidget.drawLeakage(df)
+                    elif fnmatch.fnmatch(fname[0], '*inverter.csv'):
+                        self.mainWidget.drawInverter(df)
+                    else:
+                        raise FileNotFoundError
+                except KeyError or FileNotFoundError:
+                    self.popupWarning.showWindow('Unsupported file.')
 
-    def updateStatusbar(self, s):
+    def showFileOpenALL(self):
+            """Pop up for file selection for ALL measurements."""
+            filt1 = '*.csv'
+            fname = QFileDialog.getOpenFileName(self, 'Open file', filter=filt1)
+            if fname[0]:
+                try:
+                    fileN = fname[0]
+                    if fnmatch.fnmatch(fname[0], '*iv-sweep.csv'):
+                        fileN = fileN[:-13]
+                    elif fnmatch.fnmatch(fname[0], '*output.csv'):
+                        fileN = fileN[:-11]
+                    elif fnmatch.fnmatch(fname[0], '*transfer.csv'):
+                        fileN = fileN[:-21]
+                    elif fnmatch.fnmatch(fname[0], '*gate-leakage.csv'):
+                        fileN = fileN[:-17]
+                    elif fnmatch.fnmatch(fname[0], '*inverter.csv'):
+                        fileN = fileN[:-13]
+                    self.mainWidget.drawAll(fileN)
+
+                except KeyError or FileNotFoundError:
+                    self.popupWarning.showWindow('Unsupported file.')
+
+
+    def updateStatusbar(slf, s):
         """Put text in status bar."""
         self.statusbar.showMessage(s)
 
@@ -304,9 +334,16 @@ class mplWidget(FigureCanvas):
 
         def drawAll(self, sample):
             """Take all sweeps and draw them."""
-            df1 = pd.read_csv(str(sample + '-iv-sweep.csv'), '\t')
-            df2 = pd.read_csv(str(sample + '-output.csv'), '\t')
-            df3 = pd.read_csv(str(sample + '-transfer.csv'), '\t')
+            try:
+                df1 = pd.read_csv(str(sample + '-iv-sweep.csv'), '\t')
+                df2 = pd.read_csv(str(sample + '-output.csv'), '\t')
+                df3 = pd.read_csv(
+                    str(sample + '-neg-pos-transfer.csv'), '\t')
+                df4 = pd.read_csv(
+                    str(sample + '-pos-neg-transfer.csv'), '\t')
+            except FileNotFoundError:
+                # If it can't find some data, dont worry :)
+                pass
 
             self.fig.clear()
             self.ax1 = self.fig.add_subplot(221)
@@ -314,28 +351,39 @@ class mplWidget(FigureCanvas):
             self.ax3 = self.fig.add_subplot(223)
             self.ax4 = self.fig.add_subplot(224)
 
-            self.ax1.plot(df1['Channel Voltage [V]'],
-                          df1['Channel Current [A]'], '.')
-            self.ax1.set_title('I-V sweep')
-            self.ax1.set_xlabel('Channel Voltage [V]')
-            self.ax1.set_ylabel('Channel Current [A]')
+            try:
+                self.ax1.plot(df1['Channel Voltage [V]'],
+                              df1['Channel Current [A]'] / 1e-6, '.')
+                self.ax1.set_title('I-V sweep')
+                self.ax1.set_xlabel('Channel Voltage [V]')
+                self.ax1.set_ylabel('Channel Current [$\mu$A]')
 
-            self.ax2.plot(df2['Channel Voltage [V]'],
-                          df2['Channel Current [A]'], '.')
-            self.ax2.set_title('Output curves')
-            self.ax2.set_xlabel('Channel Voltage [V]')
-            self.ax2.set_ylabel('Channel Current [A]')
+                self.ax2.plot(df2['Channel Voltage [V]'],
+                              df2['Channel Current [A]'] / 1e-6, '.')
+                self.ax2.set_title('Output curves')
+                self.ax2.set_xlabel('Channel Voltage [V]')
+                self.ax2.set_ylabel('Channel Current [$\mu$A]')
 
-            self.ax3.plot(df3['Gate Voltage [V]'],
-                          df3['Channel Current [A]'], '.')
-            self.ax3.set_title('Transfer Curves')
-            self.ax3.set_xlabel('Gate Voltage [V]')
-            self.ax3.set_ylabel('Channel Current [A]')
+                self.ax3.semilogy(df3['Gate Voltage [V]'],
+                              abs(df3['Channel Current [A]']), '.')
+                self.ax3.set_title('Transfer Curves')
+                self.ax3.set_xlabel('Gate Voltage [V]')
+                self.ax3.set_ylabel('Channel Current [A]')
 
-            self.ax4.plot(df3['Gate Voltage [V]'], df3['Gate Leakage [A]'], '.')
-            self.ax4.set_title('Gate leakage current')
-            self.ax4.set_xlabel('Gate Voltage [V]')
-            self.ax4.set_ylabel('Gate Leakage [A]')
+                self.ax3.semilogy(df4['Gate Voltage [V]'],
+                              abs(df4['Channel Current [A]']), '.')
+                self.ax3.set_title('Transfer Curves')
+                self.ax3.set_xlabel('Gate Voltage [V]')
+                self.ax3.set_ylabel('Channel Current [A]')
+
+                self.ax4.plot(df3['Gate Voltage [V]'],
+                              df3['Gate Leakage [A]'] / 1e-9, '.')
+                self.ax4.set_title('Gate leakage current')
+                self.ax4.set_xlabel('Gate Voltage [V]')
+                self.ax4.set_ylabel('Gate Leakage [nA]')
+            except UnboundLocalError:
+                pass  # if data isnt there, it cant be plotted
+            
 
             self.fig.tight_layout()
             FigureCanvas.draw(self)
