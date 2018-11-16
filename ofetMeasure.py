@@ -7,6 +7,7 @@ Author:  Ross <peregrine dot warren at physics dot ox dot ac dot uk>
 import ofetMeasureGUI  # GUI
 import k2636  # driver
 import sys
+import time
 import pandas as pd
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtWidgets import QApplication
@@ -169,6 +170,7 @@ class measureThread(QThread):
         """Logic to be run in background thread."""
         try:
             keithley = k2636.K2636()
+            begin_measure = time.time()
 
             if self.params['Measurement'] == 'iv-sweep':
                 keithley.IVsweep(self.params['Sample name'])
@@ -189,6 +191,9 @@ class measureThread(QThread):
 
             keithley.closeConnection()
             self.finishedSig.emit()
+            finish_measure = time.time()
+            print('-------------------------------------------\nAll measurements complete. Total time % .2f mins.'
+                  % ((finish_measure - begin_measure) / 60))
 
         except ConnectionError:
             self.errorSig.emit('No measurement made. Please retry.')
