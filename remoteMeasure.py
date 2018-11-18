@@ -26,8 +26,7 @@ def main(args):
               % ((finish_measure - begin_measure) / 60))
 
     except ConnectionError:
-        self.errorSig.emit('No measurement made. Please retry.')
-        self.quit()
+        print('MEASUREMENT ERROR: Measurement could not be made due to connection issues.')
 
 if __name__ == '__main__':
     parser = ArgumentParser(description=__doc__)
