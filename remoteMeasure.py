@@ -16,9 +16,9 @@ def main(args):
         keithley = k2636.K2636()
         begin_measure = time.time()
         # Measurements
-        keithley.IVsweep(args.file)
-        keithley.Output(args.file)
-        keithley.Transfer(args.file)
+        keithley.IVsweep(args.file[0])
+        keithley.Output(args.file[0])
+        keithley.Transfer(args.file[0])
         # Finish
         keithley.closeConnection()
         finish_measure = time.time()
